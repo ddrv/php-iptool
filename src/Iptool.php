@@ -211,7 +211,7 @@ namespace Ddrv\Iptool {
             foreach ($this->meta['registers'] as $r=>$register) {
                 $about['networks']['data'][$r] = array_keys(unpack($register['pack'],str_pad('',$register['len'],' ')));
             }
-            $offset = $register['offset'] + ($register['len'] * ($register['items']-1));
+            $offset = $register['offset'] + ($register['len'] * ($register['items']+1));
             fseek($this->db,$offset);
             $info = fread($this->db,$this->fileSize-$offset);
             $tmp = unpack('N1created/A128author/A*license', $info);

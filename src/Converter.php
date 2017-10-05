@@ -153,7 +153,7 @@ class Converter {
     /**
      * @var array
      */
-    protected $types=array('small','int','long','float','coord','string');
+    protected $types=array('small','int','long','float','double','string');
 
     /**
      * @var array
@@ -233,13 +233,13 @@ class Converter {
      *
      * @param string $name
      * @param string $file
-     * @param bool $ignoreFirstRow
+     * @param bool $ignoreFirstRows
      * @param string $encoding
      * @param string $delimiter
      * @param string $enclosure
      * @param string $escape
      */
-    public function addCSV($name,$file,$ignoreFirstRow=true,$encoding='UTF-8',$delimiter=',',$enclosure='"',$escape='\\') {
+    public function addCSV($name,$file,$ignoreFirstRows=true,$encoding='UTF-8',$delimiter=',',$enclosure='"',$escape='\\') {
         $this->iterator['csv']++;
         $srcId = 'CSV #'.$this->iterator['csv'];
         if (!is_string($name) || !preg_match('/^[a-z0-9]+$/ui',$name)) {
@@ -267,7 +267,7 @@ class Converter {
         }
         if (!empty($this->errors)) return;
         $this->csv[$name]['file'] = $file;
-        $this->csv[$name]['ignoreFirstRow'] = empty($ignoreFirstRow)?0:1;
+        $this->csv[$name]['ignoreFirstRows'] = empty($ignoreFirstRows)?0:(int)$ignoreFirstRows;
         $this->csv[$name]['encoding'] = $encoding;
         $this->csv[$name]['delimiter'] = $delimiter;
         $this->csv[$name]['enclosure'] = $enclosure;
@@ -381,7 +381,7 @@ class Converter {
      */
     public function create($file) {
         if (true) {
-            $tmpDb = $this->temporaryDir . DIRECTORY_SEPARATOR . 'tmp.sqlite';
+            $tmpDb = $this->temporaryDir . DIRECTORY_SEPARATOR . uniqid().'tmp.sqlite';
             try {
                 $this->pdo = new PDO('sqlite:' . $tmpDb);
                 $this->pdo->exec('PRAGMA foreign_keys = 1;PRAGMA encoding = \'UTF-8\';');
@@ -469,16 +469,18 @@ class Converter {
             $sql = 'CREATE TABLE `' . $table . '` (' . implode(',', $fields) . ', CONSTRAINT `_pk` PRIMARY KEY (`_pk`) ON CONFLICT IGNORE);';
             $sql .= 'CREATE INDEX `_used` ON `'.$table.'` (`_used`);';
             $this->pdo->exec($sql);
-            $sql = 'INSERT INTO `'.$table.'` (' . implode(',', $fields) . ') VALUES (' . implode(',', $params) . ')';
+            $sql = 'INSERT INTO `'.$table.'` (' . implode(',', $fields) . ') VALUES (' . implode(',', $params) . ');';
             $prepare['insert'][$table] = $this->pdo->prepare($sql);
             $this->pdo->beginTransaction();
             $file = $this->csv[$register['csv']];
             $csv = fopen($file['file'], 'r');
             $rowIterator = 0;
             if ($csv !== false) {
-                if (!empty($file['ignoreFirstRow'])) {
-                    $row = fgetcsv($csv, 4096, $file['delimiter'], $file['enclosure'], $file['escape']);
-                    unset($row);
+                if (!empty($file['ignoreFirstRows'])) {
+                    for($ignore=0; $ignore < $file['ignoreFirstRows']; $ignore++) {
+                        $row = fgetcsv($csv, 4096, $file['delimiter'], $file['enclosure'], $file['escape']);
+                        unset($row);
+                    }
                 }
                 while ($row = fgetcsv($csv, 4096, $file['delimiter'], $file['enclosure'], $file['escape'])) {
                     $rowIterator++;
@@ -519,9 +521,11 @@ class Converter {
             $file = $this->csv[$network['csv']];
             $csv = fopen($file['file'], 'r');
             if ($csv !== false) {
-                if (!empty($file['ignoreFirstRow'])) {
-                    $row = fgetcsv($csv, 4096, $file['delimiter'], $file['enclosure'], $file['escape']);
-                    unset($row);
+                if (!empty($file['ignoreFirstRows'])) {
+                    for ($ignore=0; $ignore < $file['ignoreFirstRows']; $ignore++) {
+                        $row = fgetcsv($csv, 4096, $file['delimiter'], $file['enclosure'], $file['escape']);
+                        unset($row);
+                    }
                 }
                 $this->pdo->beginTransaction();
                 while ($row = fgetcsv($csv, 4096, $file['delimiter'], $file['enclosure'], $file['escape'])) {
@@ -625,23 +629,21 @@ class Converter {
                         $format['pack'][] = 'f';
                         $format['unpack'][] = 'f'.$f;
                         break;
-                    case 'coord':
-                        $format['pack'][] = 'f';
-                        $format['unpack'][] = 'f'.$f;
+                    case 'double':
+                        $format['pack'][] = 'd';
+                        $format['unpack'][] = 'd'.$f;
                         break;
                 }
             }
             $pack = implode('',$format['pack']);
             $bin = self::packArray($pack,$empty);
             $this->meta['registers'][$table]['pack'] = implode('/',$format['unpack']);
-            $this->meta['registers'][$table]['items'] = 0;
             $this->meta['registers'][$table]['len'] = strlen($bin);
             $tmpFile = fopen($files[$table],'w');
             $data = $this->pdo->query('SELECT '.implode(',',$fields).' FROM `'.$table.'` WHERE `_used` = \'1\'');
             fwrite($tmpFile,$bin);
             $this->pdo->beginTransaction();
             while($row = $data->fetch()) {
-                $this->meta['registers'][$table]['items'] ++;
                 $rowId = $row['_pk'];
                 unset($row['_pk']);
                 $check = 0;
@@ -655,6 +657,7 @@ class Converter {
                 }
                 $this->pdo->exec('UPDATE `_ips` SET `offset` =\''.($check?$offset:0).'\' WHERE `parameter` = \''.$table.'\' AND `value`=\''.$rowId.'\';');
             }
+            $this->meta['registers'][$table]['items'] = $offset;
             $this->pdo->commit();
             fclose($tmpFile);
         }
