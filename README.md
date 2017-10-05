@@ -18,6 +18,7 @@ php composer.phar install
 # Create your IP addresses database
 See examples for create database:
 * Geo from Maxmind GeoLite2 Country `examples/geoFromMaxmindCountry.php`
+* Geo from Maxmind GeoLite2 City `examples/geoFromMaxmindCity.php`
 
 # Use
 ```php

@@ -7,7 +7,7 @@ $converter = new \Ddrv\Iptool\Converter($tmpDir);
 $dbFile = __DIR__.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'iptool.geo.country.dat';
 
 $url = 'http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country-CSV.zip';
-$tmpFile = $tmpDir . DIRECTORY_SEPARATOR . 'tmp.zip';
+$tmpFile = $tmpDir . DIRECTORY_SEPARATOR . 'geolite2country.zip';
 copy($url,$tmpFile);
 $zip = new ZipArchive();
 if ($zip->open($tmpFile) !== true) die;
@@ -16,13 +16,13 @@ $zipPath = null;
 do {
     $i++;
     $csv = $zip->getNameIndex($i);
-    preg_match('/(?<file>(?<zipPath>.*)\/GeoLite2-Country-Blocks-IPv4\.csv)$/ui', $csv, $m);
+    preg_match('/(?<file>(?<zipPath>.*)\/GeoLite2\-Country\-Blocks\-IPv4\.csv)$/ui', $csv, $m);
 } while ($i < $zip->numFiles && empty($m['file']));
 $zipPath = $m['zipPath'];
 $zip->close();
 
 $locations = 'zip://' . $tmpFile . '#'.$zipPath.DIRECTORY_SEPARATOR.'GeoLite2-Country-Locations-en.csv';
-$geo = 'zip://' . $tmpFile . '#' . $m['file'];
+$networks = 'zip://' . $tmpFile . '#' . $m['file'];
 
 /**
  * Set author.
@@ -37,8 +37,8 @@ $converter->setLicense('MIT');
 /**
  * Add source files.
  */
-$converter->addCSV('locations',$locations);
-$converter->addCSV('geo',$geo);
+$converter->addCSV('locations',$locations,1);
+$converter->addCSV('networks',$networks,1);
 
 /**
  * Add register Country.
@@ -59,10 +59,10 @@ $converter->addRegister('country','locations',0, $country);
 /**
  * Add networks.
  */
-$geo = array(
+$data = array(
      'country' => 1,
 );
-$converter->addNetworks('geo', 'inetnum', 0, 0, $geo);
+$converter->addNetworks('networks', 'inetnum', 0, 0, $data);
 
 /**
  * Create Database.
@@ -83,4 +83,4 @@ print_r($iptool->about());
 /**
  * Search IP Address data
  */
-print_r($iptool->find('81.32.17.89'));
+print_r($iptool->find('95.215.84.0'));
