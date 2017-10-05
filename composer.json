@@ -1,0 +1,25 @@
+{
+  "name": "ddrv/iptool",
+  "version":"1.0.0",
+  "require":{
+    "php":">=5.3.0",
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*"
+  },
+  "type": "library",
+  "description": "Define data by IP Address",
+  "keywords": ["iptool", "ip", "geo", "geoip", "info", "data"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Ivan Dudarev",
+      "email": "ivan@ddrv.ru",
+      "homepage": "https://ddrv.ru"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Ddrv\\Iptool\\": "src/"
+    }
+  }
+}
