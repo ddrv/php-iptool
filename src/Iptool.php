@@ -4,8 +4,6 @@ namespace Ddrv\Iptool {
     /**
      * Class Iptool
      *
-     * the idea is taken from Sypex Geo @see https://sypexgeo.net
-     *
      * @property boolean  $isCorrect
      * @property array    $errors
      * @property array    $meta
@@ -84,8 +82,6 @@ namespace Ddrv\Iptool {
                 'version' => $tmp['ver'],
             ];
             $registersCount = $tmp['count'];
-            //$tmp = unpack('IformatLen',substr($header,$offset,4));
-            //$offset += 4;
             $registersFormatLen = $tmp['formatLen'];
             $tmp = unpack('A*format',substr($header,$offset,$registersFormatLen));
             $offset += $registersFormatLen;
@@ -117,7 +113,7 @@ namespace Ddrv\Iptool {
             $offset += ($this->meta['networks']['len'] * $this->meta['networks']['items']);
             foreach ($this->meta['registers'] as $r=>$register) {
                 $this->meta['registers'][$r]['offset'] = $offset;
-                $offset += ($register['len'] * $register['items']);
+                $offset += ($register['len'] * ($register['items']+1));
             }
             $this->fileSize = filesize($databaseFile);
             $this->isCorrect = true;
@@ -152,12 +148,13 @@ namespace Ddrv\Iptool {
             $blocks = fread($this->db,$blockCount*$this->meta['networks']['len']);
             $offset = 0;
             $step = ceil(sqrt($blockCount));
-            $check = substr($blocks, $offset + ($this->meta['networks']['len'] * $step), 4);
 
+            $check = substr($blocks, $offset + ($this->meta['networks']['len'] * $step), 4);
             while ($check && $long >= $check && ($offset < ($blockCount)*$this->meta['networks']['len'])) {
                 $offset += $this->meta['networks']['len'] * $step;
                 $check = substr($blocks, $offset + ($this->meta['networks']['len'] * $step), 4);
             }
+
             do {
                 if ($offset > strlen($blocks)) {
                     $offset = strlen($blocks)-$this->meta['networks']['len'];
@@ -176,17 +173,18 @@ namespace Ddrv\Iptool {
                 }
             }
             if (!$next) {
-                $next = pack('N',ip2long('255.255.255.255'));
+                $next = pack('N',ip2long('255.255.255.255')+1);
             }
             $network = unpack('Nfirst/Nlast',$first.$next);
-            $data['network'] = array(long2ip($network['first']),long2ip($network['last']));
+            $data['network'] = array(long2ip($network['first']),long2ip($network['last']-1));
             foreach ($registers as $register=>$item) {
-                $data['data'][$register] = $this->getRegisterData($register,$item);
+                $data['data'][$register] = $this->getRegisterRecord($register,$item);
             }
             return $data;
         }
 
-        public function getRegisterData($register,$item) {
+        public function getRegisterRecord($register,$item) {
+            if ($item > $this->meta['registers'][$register]['items']) $item = 0;
             $seek = $this->meta['registers'][$register]['offset']+($item * $this->meta['registers'][$register]['len']);
             fseek($this->db,$seek);
             $data = unpack($this->meta['registers'][$register]['pack'],fread($this->db,$this->meta['registers'][$register]['len']));
@@ -217,6 +215,23 @@ namespace Ddrv\Iptool {
             $tmp = unpack('N1created/A128author/A*license', $info);
             $about = array_replace($about, $tmp);
             return $about;
+        }
+
+        /**
+         * Return array of register rows
+         *
+         * @param $register
+         * @return array
+         */
+        public function getRegister($register) {
+            if (!isset($this->meta['registers'][$register])) return array();
+            $result = array();
+            $seek = $this->meta['registers'][$register]['offset']+$this->meta['registers'][$register]['len'];
+            fseek($this->db,$seek);
+            for($i = 1;$i<=$this->meta['registers'][$register]['items'];$i++) {
+                $result[$i] = unpack($this->meta['registers'][$register]['pack'],fread($this->db,$this->meta['registers'][$register]['len']));
+            }
+            return $result;
         }
     }
 }
