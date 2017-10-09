@@ -127,7 +127,7 @@ Array
     )
 )
 ```
-# 2.6. Create database
+## 2.6. Create database
 
 Use Converter class for create database
 1. Prepare files describing the intervals and registers from which you are going to compile a binary database. These files should look like a relational database table.
