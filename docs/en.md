@@ -150,12 +150,21 @@ Use Converter class for create database
     192,2,"some info 7","some info 8"
     34,"unused row","some info 9","some info 10"
     ```
-2. Initialization converter
+1. Initialization converter
     ```php
     $tmpDir = 'path/to/dir/for/temporary/files';
     $converter = new \Ddrv\Iptool\Converter($tmpDir);
     ```
-3. Set author information
+    
+1. Set creation time.
+    ```php
+    /**
+     * $time - time in unixstamp format.
+     */
+    $converter->setTime(1507638600); // 2017/10/10 15:30:00
+    ```
+
+1. Set author information
     ```php
     /**
      * $author can be a string no longer than 64 characters.
@@ -164,7 +173,7 @@ Use Converter class for create database
     $converter->setAuthor($author);
     ```
 
-4. Set license of database
+1. Set license of database
     ```php
     /**
      * $license may be the name of a public license or the text of a license. The length is unlimited.
@@ -173,7 +182,7 @@ Use Converter class for create database
     $converter->setLicense($license);
     ```
 
-5. Add prepared files. Use the addCSV() method with parameters:
+1. Add prepared files. Use the addCSV() method with parameters:
     * unique key for file. Required;
     * path to csv file. Required;
     * count ignored first row (default 0);
@@ -186,7 +195,7 @@ Use Converter class for create database
     $converter->addCSV('networksCSV','/path/to/cvs/networks.csv',1);
     ```
 
-6. Define format of registers
+1. Define format of registers
     ```php
     $info = array(
         'interval' => array(
@@ -222,7 +231,7 @@ Use Converter class for create database
         ),
     );
     ```
-7. Add definite registers. Use the addRegister() method with parameters:
+1. Add definite registers. Use the addRegister() method with parameters:
     * Register name. Required;
     * unique key of CSV file (from method addCSV). Required;
     * number of ID column. The account is from 0;
@@ -230,7 +239,7 @@ Use Converter class for create database
     ```php
     $converter->addRegister('info','infoCSV',0, $info);
     ```
-8. Define format of intervals
+1. Define format of intervals
     ```php
     $networks = array(
         /**
@@ -241,7 +250,7 @@ Use Converter class for create database
     );
     ```
 
-9. Add definite intervals. Use the addNetworks() method with parameters:
+1. Add definite intervals. Use the addNetworks() method with parameters:
     * unique key of intervals CSV file (from method addCSV). Required;
     * format IP address in CSV file. May be:
         * ip (for example, 123.123.123.123);
@@ -253,7 +262,7 @@ Use Converter class for create database
     ```php
     $converter->addNetworks('networksCSV', 'ip', 0, 1, $networks);
     ```
-10. Run compile database
+1. Run compile database
     ```php
     $errors = $converter->getErrors();
     if (!$errors) {

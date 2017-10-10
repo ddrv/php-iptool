@@ -7,6 +7,7 @@ use \PDOException;
 /**
  * Class Converter
  *
+ * @property integer $time
  * @property string  $author
  * @property string  $license
  * @property string  $temporaryDir
@@ -29,6 +30,11 @@ class Converter
      * Parser version.
      */
     const VERSION = '1';
+
+    /**
+     * @var integer
+     */
+    protected $time = 0;
 
     /**
      * @var string
@@ -224,6 +230,20 @@ class Converter
     {
         if (mb_strlen($author) > 64) $author = mb_substr($author,0,64);
         $this->author = $author;
+    }
+
+    /**
+     * Set creation time of database
+     *
+     * @param integer $time
+     */
+    public function setTime($time)
+    {
+        $time = (int)$time;
+        if ($time < 0) {
+            $time = 0;
+        }
+        $this->time = $time;
     }
 
     /**
@@ -456,8 +476,8 @@ class Converter
             /* Remove register temporary file */
             if (is_writable($register)) unlink($register);
         }
-
-        fwrite($database,pack('N1A128',time(),$this->author));
+        $time = empty($this->time)?time():$this->time;
+        fwrite($database,pack('N1A128',$time,$this->author));
         fwrite($database,pack('A*',$this->license));
         fclose($database);
         return;
