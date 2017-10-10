@@ -23,7 +23,11 @@ use \PDOException;
  * @property PDO     $pdo
  *
  */
-class Converter {
+class Converter
+{
+    /**
+     * Parser version.
+     */
     const VERSION = '1';
 
     /**
@@ -195,7 +199,8 @@ class Converter {
      *
      * @param string $tmp
      */
-    public function __construct($tmp = null) {
+    public function __construct($tmp = null)
+    {
         $this->errors = array();
         $this->temporaryDir = (is_dir($tmp))?$tmp:sys_get_temp_dir();
     }
@@ -205,7 +210,8 @@ class Converter {
      *
      * @return array
      */
-    public function getErrors() {
+    public function getErrors()
+    {
         return $this->errors;
     }
 
@@ -214,7 +220,8 @@ class Converter {
      *
      * @param string $author
      */
-    public function setAuthor($author) {
+    public function setAuthor($author)
+    {
         if (mb_strlen($author) > 64) $author = mb_substr($author,0,64);
         $this->author = $author;
     }
@@ -224,7 +231,8 @@ class Converter {
      *
      * @param string $license
      */
-    public function setLicense($license) {
+    public function setLicense($license)
+    {
         $this->license = $license;
     }
 
@@ -239,7 +247,8 @@ class Converter {
      * @param string $enclosure
      * @param string $escape
      */
-    public function addCSV($name,$file,$ignoreFirstRows=true,$encoding='UTF-8',$delimiter=',',$enclosure='"',$escape='\\') {
+    public function addCSV($name,$file,$ignoreFirstRows=true,$encoding='UTF-8',$delimiter=',',$enclosure='"',$escape='\\')
+    {
         $this->iterator['csv']++;
         $srcId = 'CSV #'.$this->iterator['csv'];
         if (!is_string($name) || !preg_match('/^[a-z0-9]+$/ui',$name)) {
@@ -283,7 +292,8 @@ class Converter {
      * @param integer $key
      * @param array   $fields
      */
-    public function addRegister($name, $csv, $key, $fields) {
+    public function addRegister($name, $csv, $key, $fields)
+    {
         $fieldIterator = 0;
         $transforms = array('up','low','none');
         $this->iterator['register']++;
@@ -330,7 +340,8 @@ class Converter {
      * @param integer $lastIp
      * @param array $registers
      */
-    public function addNetworks($csv,$ipFormat,$firstIp,$lastIp,$registers) {
+    public function addNetworks($csv,$ipFormat,$firstIp,$lastIp,$registers)
+    {
         $registersIterator = 0;
         $this->iterator['network']++;
         $netId = 'Network #'.$this->iterator['network'];
@@ -380,7 +391,8 @@ class Converter {
      *
      * @param string $file
      */
-    public function create($file) {
+    public function create($file)
+    {
         if (!empty($this->errors)) return null;
         $tmpDb = $this->temporaryDir . DIRECTORY_SEPARATOR . uniqid().'tmp.sqlite';
         try {
@@ -454,7 +466,8 @@ class Converter {
     /**
      * Create temporary database.
      */
-    protected function createTmpDb() {
+    protected function createTmpDb()
+    {
         if (empty($this->registers)) return;
         foreach ($this->registers as $table=>$register) {
             $fields = array('`_pk`', '`_used`');
@@ -600,7 +613,8 @@ class Converter {
      *
      * @return array
      */
-    protected function createTmpRegisters() {
+    protected function createTmpRegisters()
+    {
         if (empty($this->registers)) return array();
         $files = array();
         foreach ($this->registers as $table=>$register) {
@@ -673,7 +687,8 @@ class Converter {
      *
      * @return string
      */
-    protected function createTmpNetworks() {
+    protected function createTmpNetworks()
+    {
         $ip = 0;
         $fields = array();
         $values = array();
@@ -745,7 +760,8 @@ class Converter {
      * @param array $array
      * @return string
      */
-    public static function packArray($format,$array) {
+    public static function packArray($format,$array)
+    {
         $packParams = array_values($array);
         array_unshift($packParams,$format);
         return call_user_func_array('pack',$packParams);
@@ -757,7 +773,8 @@ class Converter {
      * @param string $prefixOrInetnum
      * @return array
      */
-    public static function parseInetnum($prefixOrInetnum) {
+    public static function parseInetnum($prefixOrInetnum)
+    {
         $result = ['first'=>null,'last'=>null];
         if (strpos($prefixOrInetnum,'-') !== false) {
             $d = explode('-',$prefixOrInetnum);
