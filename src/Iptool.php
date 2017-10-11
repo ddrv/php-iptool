@@ -84,6 +84,11 @@ class Iptool
             'dit' => $dit,
             'version' => $tmp['ver'],
         ];
+        if ($this->meta['version'] !== self::VERSION) {
+            fclose($this->db);
+            $this->errors[] = 'file '.$databaseFile.' is not database version '.self::VERSION;
+            return;
+        }
         $registersCount = $tmp['count'];
         $registersFormatLen = $tmp['formatLen'];
         $tmp = unpack('A*format',substr($header,$offset,$registersFormatLen));
@@ -136,13 +141,16 @@ class Iptool
         $data = array();
         $octet = (int)$ip;
         $long = pack('N',ip2long($ip));
-        $start = $stop = $this->meta['index'][$octet];
+        $start = $this->meta['index'][$octet];
+        $stop = $this->meta['index'][$octet];
         while($octet < 255 && $this->meta['index'][$octet] == $start) {
-            $stop = $this->meta['index'][$octet];
             $octet++;
+            $stop = $this->meta['index'][$octet];
         }
         if ($stop == $start) {
             $stop = $this->meta['networks']['items'];
+        } elseif ($stop < $this->meta['networks']['items']) {
+            $stop++;
         }
         if ($start > 0) {
             $start--;
@@ -151,23 +159,24 @@ class Iptool
         $seek = $this->meta['networks']['offset']+($start*$this->meta['networks']['len']);
         fseek($this->db,$seek);
         $blocks = fread($this->db,$blockCount*$this->meta['networks']['len']);
+        $blocksLength = strlen($blocks);
         $offset = 0;
-        $step = ceil(sqrt($blockCount));
-
-        $check = substr($blocks, $offset + ($this->meta['networks']['len'] * $step), 4);
-        while ($check && $long >= $check && ($offset < ($blockCount)*$this->meta['networks']['len'])) {
-            $offset += $this->meta['networks']['len'] * $step;
+        if ($blockCount > 10) {
+            $step = ceil(sqrt($blockCount));
             $check = substr($blocks, $offset + ($this->meta['networks']['len'] * $step), 4);
+            while ($check && $long >= $check && ($offset < ($blockCount) * $this->meta['networks']['len'])) {
+                $offset += $this->meta['networks']['len'] * $step;
+                $check = substr($blocks, $offset + ($this->meta['networks']['len'] * $step), 4);
+            }
         }
-
         do {
-            if ($offset > strlen($blocks)) {
-                $offset = strlen($blocks)-$this->meta['networks']['len'];
+            if ($offset > $blocksLength) {
+                $offset = $blocksLength-$this->meta['networks']['len'];
             }
             $block = substr($blocks,$offset,$this->meta['networks']['len']);
             $first = substr($block,0,4);
             $next = substr($blocks,$offset+$this->meta['networks']['len'],4);
-            if ($first <= $long && ($long < $next || $next === false)) {
+            if ($first <= $long && ($long < $next || $next == false)) {
                 $registers = unpack($this->meta['networks']['pack'],substr($block,4));
             }
             $offset += $this->meta['networks']['len'];
