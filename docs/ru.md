@@ -10,18 +10,7 @@
     ```text
     php composer.phar require ddrv/iptool
     ```
-    ```json
-    {
-        "require": {
-            "ddrv/iptool":"*"
-        }
-    }
-    ```
-2. Установите пакет
-    ```text
-    php composer.phar install
-    ```
-3. Подключите автозагрузку классов
+2. Подключите автозагрузку классов
     ```php
     include('vendor/autoload.php');
     ```

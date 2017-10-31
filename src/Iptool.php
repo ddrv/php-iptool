@@ -84,7 +84,7 @@ class Iptool
             'dit' => $dit,
             'version' => $tmp['ver'],
         ];
-        if ($this->meta['version'] !== self::VERSION) {
+        if ($this->meta['version'] != self::VERSION) {
             fclose($this->db);
             $this->errors[] = 'file '.$databaseFile.' is not database version '.self::VERSION;
             return;
@@ -137,7 +137,6 @@ class Iptool
     {
         if (!filter_var($ip, FILTER_VALIDATE_IP)) return false;
         if (!$this->isCorrect) return false;
-        $registers = false;
         $data = array();
         $octet = (int)$ip;
         $long = pack('N',ip2long($ip));
@@ -159,38 +158,32 @@ class Iptool
         $seek = $this->meta['networks']['offset']+($start*$this->meta['networks']['len']);
         fseek($this->db,$seek);
         $blocks = fread($this->db,$blockCount*$this->meta['networks']['len']);
-        $blocksLength = strlen($blocks);
-        $offset = 0;
-        if ($blockCount > 10) {
-            $step = ceil(sqrt($blockCount));
-            $check = substr($blocks, $offset + ($this->meta['networks']['len'] * $step), 4);
-            while ($check && $long >= $check && ($offset < ($blockCount) * $this->meta['networks']['len'])) {
-                $offset += $this->meta['networks']['len'] * $step;
-                $check = substr($blocks, $offset + ($this->meta['networks']['len'] * $step), 4);
-            }
-        }
+        $start = 0;
+        $stop = $blockCount;
         do {
-            if ($offset > $blocksLength) {
-                $offset = $blocksLength-$this->meta['networks']['len'];
+            $center = ($start + $stop) >> 1;
+            $sc = substr($blocks, $center * $this->meta['networks']['len'], 4);
+            if ($sc > $long) {
+                $stop = $center;
+            } else {
+                $start = $center;
             }
-            $block = substr($blocks,$offset,$this->meta['networks']['len']);
-            $first = substr($block,0,4);
-            $next = substr($blocks,$offset+$this->meta['networks']['len'],4);
-            if ($first <= $long && ($long < $next || $next == false)) {
-                $registers = unpack($this->meta['networks']['pack'],substr($block,4));
-            }
-            $offset += $this->meta['networks']['len'];
-        } while($offset < strlen($blocks) && !$registers);
-        if (!$registers) {
-            foreach ($this->meta['registers'] as $r=>$register) {
-                $registers[$r] = 0;
-            }
+            $blocksCount = $stop - $start;
+        } while ($blocksCount >= 2);
+        if ($long > $stop) {
+            $start = $stop;
         }
-        if (!$next) {
-            $next = pack('N',ip2long('255.255.255.255')+1);
+        $block = substr($blocks, $start * $this->meta['networks']['len'], $this->meta['networks']['len']);
+        $network = unpack('Nfirst',substr($block,0,4));
+        $data['network']['first'] = long2ip($network['first']);
+        $next = substr($blocks,($start+1)*$this->meta['networks']['len'],4);
+        if ($next) {
+            $network = unpack('Nlast',$next);
+            $data['network']['last'] = long2ip($network['last']);
+        } else {
+            $data['network']['last'] = '255.255.255.255';
         }
-        $network = unpack('Nfirst/Nlast',$first.$next);
-        $data['network'] = array(long2ip($network['first']),long2ip($network['last']-1));
+        $registers = unpack($this->meta['networks']['pack'],substr($block,4));
         foreach ($registers as $register=>$item) {
             $data['data'][$register] = $this->getRegisterRecord($register,$item);
         }

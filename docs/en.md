@@ -10,18 +10,7 @@
     ```text
     php composer.phar require ddrv/iptool
     ```
-    ```json
-    {
-        "require": {
-            "ddrv/iptool":"*"
-        }
-    }
-    ```
-2. Run in console
-    ```text
-    php composer.phar install
-    ```
-3. Include autoload file
+2. Include autoload file
     ```php
     include('vendor/autoload.php');
     ```
