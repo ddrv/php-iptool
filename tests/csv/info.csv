@@ -1,7 +1,5 @@
-Строка с какой-либо информацией (например, копирайт). Вторая строка описывает колонки и тоже не будет использоваться в БД.
 id,interval_num,data1,data2
 2,3,"some info 1","some info 2"
 17,4,"some info 3","some info 4"
 89,1,"some info 5","some info 6"
 192,2,"some info 7","some info 8"
-34,"unused row","some info 9","some info 10"

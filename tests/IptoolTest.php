@@ -25,7 +25,7 @@ class IptoolTest extends TestCase
         $converter->setTime($time);
         $converter->setLicense($license);
 
-        $converter->addCSV('infoCSV',$csvDir.DIRECTORY_SEPARATOR.'info.csv',2);
+        $converter->addCSV('infoCSV',$csvDir.DIRECTORY_SEPARATOR.'info.csv',1);
         $converter->addCSV('networksCSV',$csvDir.DIRECTORY_SEPARATOR.'networks.csv',1);
 
         $info = array(
@@ -93,7 +93,9 @@ class IptoolTest extends TestCase
         unlink($dbFile);
         $tmpFiles = glob($tmpDir.DIRECTORY_SEPARATOR.'*');
         foreach ($tmpFiles as $tmpFile) {
-            unlink($tmpFile);
+            if ($tmpFile != $tmpDir.DIRECTORY_SEPARATOR.'.gitkeep') {
+                unlink($tmpFile);
+            }
         }
     }
 }
