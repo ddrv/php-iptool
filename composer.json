@@ -13,10 +13,10 @@
     }
   ],
   "require":{
-    "php":">=5.3.0"
+    "php":"^5.3"
   },
   "require-dev":{
-    "phpunit/phpinut":"^5"
+    "phpunit/phpunit":"^5.1"
   },
   "suggest": {
     "ext-pdo_sqlite": "Need for Convertor"
