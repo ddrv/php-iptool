@@ -179,7 +179,7 @@ class Iptool
         $next = substr($blocks,($start+1)*$this->meta['networks']['len'],4);
         if ($next) {
             $network = unpack('Nlast',$next);
-            $data['network']['last'] = long2ip($network['last']);
+            $data['network']['last'] = long2ip($network['last']-1);
         } else {
             $data['network']['last'] = '255.255.255.255';
         }
@@ -211,7 +211,7 @@ class Iptool
             'author' => '',
             'license' => '',
             'networks' => array(
-                'count' => $this->meta['networks']['items'],
+                'count' => $this->meta['networks']['items']-1,
                 'data' => array(),
             ),
         );

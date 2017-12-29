@@ -1,11 +1,6 @@
 {
   "name": "ddrv/iptool",
-  "version":"1.0.7",
-  "require":{
-    "php":">=5.3.0",
-    "ext-pdo": "*",
-    "ext-pdo_sqlite": "*"
-  },
+  "version":"1.0.8",
   "type": "library",
   "description": "Define data by IP Address",
   "keywords": ["iptool", "ip", "geo", "geoip", "info", "data", "ip-database", "search", "ip-search"],
@@ -17,6 +12,15 @@
       "homepage": "https://ddrv.ru"
     }
   ],
+  "require":{
+    "php":">=5.3.0"
+  },
+  "require-dev":{
+    "phpunit/phpinut":"^5"
+  },
+  "suggest": {
+    "ext-pdo_sqlite": "Need for Convertor"
+  },
   "autoload": {
     "psr-4": {
       "Ddrv\\Iptool\\": "src/"
