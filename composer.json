@@ -25,5 +25,10 @@
     "psr-4": {
       "Ddrv\\Iptool\\": "src/"
     }
+  },
+  "support": {
+    "issues": "https://github.com/ddrv/iptool/issues",
+    "source": "https://github.com/ddrv/iptool",
+    "docs": "https://github.com/ddrv/iptool/wiki"
   }
 }
