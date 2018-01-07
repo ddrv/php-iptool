@@ -1,6 +1,7 @@
-[![Latest Stable Version](https://poser.pugx.org/ddrv/iptool/v/stable?format=flat-square)](https://packagist.org/packages/ddrv/iptool)
-[![Total Downloads](https://poser.pugx.org/ddrv/iptool/downloads?format=flat-square)](https://packagist.org/packages/ddrv/iptool)
-[![License](https://poser.pugx.org/ddrv/iptool/license?format=flat-square)](https://packagist.org/packages/ddrv/iptool)
+[![Latest Stable Version](https://img.shields.io/packagist/v/ddrv/iptool.svg?style=flat-square)](https://packagist.org/packages/ddrv)
+[![Total Downloads](https://img.shields.io/packagist/dt/ddrv/iptool.svg?style=flat-square)](https://packagist.org/packages/ddrv/iptool)
+[![License](https://img.shields.io/packagist/l/ddrv/iptool.svg?style=flat-square)](https://github.com/ddrv/iptool/blob/master/LICENSE)
+[![PHP](https://img.shields.io/packagist/php-v/ddrv/iptool.svg?style=flat-square)](https://php.net)
 
 # IP Tool
 ![Logo](https://github.com/ddrv/iptool/wiki/img/iptool.png)
