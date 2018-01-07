@@ -1,5 +1,5 @@
-[![Latest Stable Version](https://img.shields.io/packagist/v/ddrv/iptool.svg?style=flat-square)](https://packagist.org/packages/ddrv)
-[![Total Downloads](https://img.shields.io/packagist/dt/ddrv/iptool.svg?style=flat-square)](https://packagist.org/packages/ddrv/iptool)
+[![Latest Stable Version](https://img.shields.io/packagist/v/ddrv/iptool.svg?style=flat-square)](https://packagist.org/packages/ddrv/iptool)
+[![Total Downloads](https://img.shields.io/packagist/dt/ddrv/iptool.svg?style=flat-square)](https://packagist.org/packages/ddrv/iptool/stats)
 [![License](https://img.shields.io/packagist/l/ddrv/iptool.svg?style=flat-square)](https://github.com/ddrv/iptool/blob/master/LICENSE)
 [![PHP](https://img.shields.io/packagist/php-v/ddrv/iptool.svg?style=flat-square)](https://php.net)
 
