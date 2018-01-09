@@ -550,8 +550,8 @@ class Converter
 
         $sql = 'CREATE '.'TABLE `_ips` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `ip` INTEGER,`action` TEXT, `parameter` TEXT, `value` TEXT, `offset` TEXT); CREATE INDEX `ip` ON `_ips` (`ip`); CREATE INDEX `parameter` ON `_ips` (`parameter`); CREATE INDEX `value` ON `_ips` (`value`);';
         $this->pdo->exec($sql);
-        $prepare['insert']['ips'] = $this->pdo->prepare('INSERT '.'INTO `_ips` (`ip`,`action`,`parameter`,`value`) VALUES (:ip,:action,:parameter,:value);');
-        $prepare['insert']['ips']->execute(array(
+        $prepareInsertIpsStatement = $this->pdo->prepare('INSERT '.'INTO `_ips` (`ip`,`action`,`parameter`,`value`) VALUES (:ip,:action,:parameter,:value);');
+        $prepareInsertIpsStatement->execute(array(
             'ip' => 0,
             'action' => 'add',
             'parameter' => NULL,
@@ -604,20 +604,15 @@ class Converter
                             $lastIp = $lip;
                             break;
                     }
-                    /**
-                     * @var \PDOStatement $s
-                     */
-
-                    $s = $prepare['insert']['ips'];
                     foreach ($network['registers'] as $register => $column) {
                         $value = isset($row[$column]) ? $row[$column] : null;
-                        $s->execute(array(
+                        $prepareInsertIpsStatement->execute(array(
                             'ip' => $firstIp,
                             'action' => 'add',
                             'parameter' => $register,
                             'value' => $value,
                         ));
-                        $s->execute(array(
+                        $prepareInsertIpsStatement->execute(array(
                             'ip' => $lastIp + 1,
                             'action' => 'remove',
                             'parameter' => $register,
