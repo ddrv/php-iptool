@@ -1,6 +1,6 @@
 {
   "name": "ddrv/iptool",
-  "version":"1.0.8",
+  "version":"1.0.9",
   "type": "library",
   "description": "Define data by IP Address",
   "keywords": ["iptool", "ip", "geo", "geoip", "info", "data", "ip-database", "search", "ip-search"],
