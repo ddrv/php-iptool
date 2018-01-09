@@ -551,6 +551,12 @@ class Converter
         $sql = 'CREATE '.'TABLE `_ips` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `ip` INTEGER,`action` TEXT, `parameter` TEXT, `value` TEXT, `offset` TEXT); CREATE INDEX `ip` ON `_ips` (`ip`); CREATE INDEX `parameter` ON `_ips` (`parameter`); CREATE INDEX `value` ON `_ips` (`value`);';
         $this->pdo->exec($sql);
         $prepare['insert']['ips'] = $this->pdo->prepare('INSERT '.'INTO `_ips` (`ip`,`action`,`parameter`,`value`) VALUES (:ip,:action,:parameter,:value);');
+        $prepare['insert']['ips']->execute(array(
+            'ip' => 0,
+            'action' => 'add',
+            'parameter' => NULL,
+            'value' => NULL,
+        ));
         foreach ($this->networks as $network) {
             $file = $this->csv[$network['csv']];
             $csv = fopen($file['file'], 'r');
@@ -709,7 +715,7 @@ class Converter
      */
     protected function createTmpNetworks()
     {
-        $ip = 0;
+        $ip = -1;
         $fields = array();
         $values = array();
         $format = array();
@@ -725,11 +731,11 @@ class Converter
             $values[$register][] = 0;
         }
         $pack = implode('',$format['pack']);
-        $empty = self::packArray($pack,$fields);
-        $bin = pack('N',$ip).$empty;
+        $binaryPrevData = self::packArray($pack,$fields);
+        $empty = pack('N',0).$binaryPrevData;
         $this->meta['networks']['pack'] = implode('/',$format['unpack']);
         $offset = 0;
-        $this->meta['networks']['len'] = strlen($bin);
+        $this->meta['networks']['len'] = strlen($empty);
         $this->meta['index'][0] = 0;
         $file = $this->temporaryDir.DIRECTORY_SEPARATOR.'networks.'.uniqid().'.tmp';
         $tmpFile = fopen($file,'w');
@@ -737,12 +743,16 @@ class Converter
         while ($row = $ipinfo->fetch()) {
             if ($row['ip'] !== $ip) {
                 foreach ($values as $param=>$v) {
-                    $fields[$param] = array_pop($v);
+                    if (!empty($param)) $fields[$param] = array_pop($v);
                 }
-                fwrite($tmpFile,pack('N',$ip).self::packArray($pack,$fields));
-                $octet = (int)long2ip($ip);
-                if (!isset($this->meta['index'][$octet])) $this->meta['index'][$octet] = $offset;
-                $offset++;
+                $binaryData = self::packArray($pack,$fields);
+                if ($binaryData !== $binaryPrevData || empty($ip)) {
+                    fwrite($tmpFile, pack('N', $ip) . $binaryData);
+                    $octet = (int)long2ip($ip);
+                    if (!isset($this->meta['index'][$octet])) $this->meta['index'][$octet] = $offset;
+                    $offset++;
+                    $binaryPrevData = $binaryData;
+                }
                 $ip = $row['ip'];
             }
             if ($row['action'] == 'remove') {
@@ -756,12 +766,15 @@ class Converter
         }
         if ($ip < ip2long('255.255.255.255')) {
             foreach ($values as $param => $v) {
-                $fields[$param] = array_pop($v);
+                if (!empty($param)) $fields[$param] = array_pop($v);
             }
-            $octet = (int)long2ip($ip);
-            if (!isset($this->meta['index'][$octet])) $this->meta['index'][$octet] = $offset;
-            $offset++;
-            fwrite($tmpFile, pack('N', $ip) . self::packArray($pack, $fields));
+            $binaryData = self::packArray($pack, $fields);
+            if ($binaryData !== $binaryPrevData) {
+                $octet = (int)long2ip($ip);
+                if (!isset($this->meta['index'][$octet])) $this->meta['index'][$octet] = $offset;
+                $offset++;
+                fwrite($tmpFile, pack('N', $ip) . $binaryData);
+            }
         }
         $this->meta['networks']['items'] = $offset;
         for($i=1;$i<=255;$i++) {

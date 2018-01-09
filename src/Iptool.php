@@ -211,7 +211,7 @@ class Iptool
             'author' => '',
             'license' => '',
             'networks' => array(
-                'count' => $this->meta['networks']['items']-1,
+                'count' => $this->meta['networks']['items'],
                 'data' => array(),
             ),
         );
