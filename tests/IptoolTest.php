@@ -223,21 +223,6 @@ class IptoolTest extends TestCase
         $this->assertSame($info['network']['last'], '255.255.255.255');
         $this->assertEmpty($info['data']['info']['name']);
 
-/*
-        $info = $iptool->find('128.100.0.13');
-        $this->assertSame($info['network']['first'], '128.0.0.0');
-        $this->assertSame($info['network']['last'], '191.255.255.255');
-        $this->assertSame($info['data']['info']['interval'], 3);
-        $this->assertSame($info['data']['info']['caption'], 'some info 1');
-        $this->assertSame($info['data']['info']['extendedInfo'], 'some info 2');
-/*
-        $info = $iptool->find('202.100.0.13');
-        $this->assertSame($info['network']['first'], '192.0.0.0');
-        $this->assertSame($info['network']['last'], '255.255.255.255');
-        $this->assertSame($info['data']['info']['interval'], 4);
-        $this->assertSame($info['data']['info']['caption'], 'some info 3');
-        $this->assertSame($info['data']['info']['extendedInfo'], 'some info 4');
-*/
         unlink($dbFile);
         $tmpFiles = glob($tmpDir.DIRECTORY_SEPARATOR.'*');
         foreach ($tmpFiles as $tmpFile) {
