@@ -18,13 +18,24 @@ class Network extends CsvAbstract
      * Network constructor.
      *
      * @param string $file CSV source file
-     * @param string $type
-     * @param integer $firstAddressColumn
-     * @param integer $lastAddressColumn
+     * @param string $ipType
+     * @param integer $firstIpColumn
+     * @param integer $lastIpColumn
+     * @throws \InvalidArgumentException
      */
-    public function __construct($file, $type, $firstAddressColumn, $lastAddressColumn)
+    public function __construct($file, $ipType, $firstIpColumn, $lastIpColumn)
     {
-        $this->checkFile($file);
+        try {
+            $this->checkFile($file);
+        } catch (\InvalidArgumentException $exception) {
+            throw $exception;
+        }
+        if (!is_int($firstIpColumn) || $firstIpColumn < 1) {
+            throw new \InvalidArgumentException('firstIpColumn must be positive integer');
+        }
+        if (!is_int($lastIpColumn) || $lastIpColumn < 1) {
+            throw new \InvalidArgumentException('lastIpColumn must be positive integer');
+        }
     }
 
     /**
@@ -37,6 +48,19 @@ class Network extends CsvAbstract
      */
     public function addRegister($name, $column, $register)
     {
+
+        if (!$this->checkName($name)) {
+            throw new \InvalidArgumentException('incorrect name');
+        }
+        if (!is_int($column) || $column < 1) {
+            throw new \InvalidArgumentException('column must be positive integer');
+        }
+        if (!($register instanceof Register)) {
+            throw new \InvalidArgumentException('incorrect register');
+        }
+        if (empty($register->getFields())) {
+            throw new \InvalidArgumentException('fields of register can not be empty');
+        }
         $this->registers[$name] = array(
             'column' => $column,
             'register' => $register,

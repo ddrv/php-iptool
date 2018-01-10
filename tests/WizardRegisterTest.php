@@ -2,7 +2,7 @@
 namespace Ddrv\Tests\Iptool;
 
 use PHPUnit\Framework\TestCase;
-use Ddrv\Iptool\Iptool;
+use Ddrv\Iptool\Wizard\Register;
 use Ddrv\Iptool\Wizard;
 use Ddrv\Iptool\Wizard\Types\Decimal;
 
@@ -17,7 +17,8 @@ class WizardRegisterTest extends TestCase
      */
     public function testCreateWithIncorrectFilename()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(array());
+        $register = new Register(-1);
+        unset($register);
     }
 
     /**
@@ -26,7 +27,8 @@ class WizardRegisterTest extends TestCase
      */
     public function testCreateWithNonexistentFile()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register('file_not_exists.php');
+        $register = new Register('file_not_exists.php');
+        unset($register);
     }
 
     /**
@@ -35,7 +37,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithNonStringEncoding()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv(array());
     }
 
@@ -45,7 +47,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithUnsupportedEncoding()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('unsupportedEncoding');
     }
 
@@ -55,7 +57,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithNonStringDelimiter()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('UTF-8', array());
     }
 
@@ -65,7 +67,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithLongerDelimiter()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('UTF-8', 'word');
     }
 
@@ -75,7 +77,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithShortDelimiter()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('UTF-8', '');
     }
 
@@ -85,7 +87,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithNonStringEnclosure()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('UTF-8', ',', array());
     }
 
@@ -95,7 +97,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithLongerEnclosure()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('UTF-8', ',','word');
     }
 
@@ -105,7 +107,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithShortEnclosure()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('UTF-8', ',','');
     }
 
@@ -115,7 +117,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithNonStringEscape()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('UTF-8', ',', '"', array());
     }
 
@@ -125,7 +127,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithLongerEscape()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('UTF-8', ',','"', 'word');
     }
 
@@ -135,7 +137,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsvWithShortEscape()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('UTF-8', ',','"', '');
     }
 
@@ -144,7 +146,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testDefaultCsvSets()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $sets = $register->getCsv();
         $this->assertSame('UTF-8',$sets['encoding']);
         $this->assertSame(',',$sets['delimiter']);
@@ -157,7 +159,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsv()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setCsv('ASCII', ';','\'', '/');
         $sets = $register->getCsv();
         $this->assertSame('ASCII',$sets['encoding']);
@@ -172,7 +174,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetFirstRowWithString()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setFirstRow('first');
     }
 
@@ -182,7 +184,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetFirstRowWithFloat()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setFirstRow(6.4);
     }
 
@@ -192,7 +194,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetFirstRowWithZero()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setFirstRow(0);
     }
 
@@ -202,7 +204,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetFirstRowWithNegativeInt()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setFirstRow(-1);
     }
 
@@ -211,7 +213,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testCorrectSetFirstRow()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setFirstRow(2);
         $row = $register->getFirstRow();
         $this->assertSame(2, $row);
@@ -223,7 +225,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetIdWithString()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setId('first');
     }
 
@@ -233,7 +235,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetIdWithFloat()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setId(2.5);
     }
 
@@ -243,7 +245,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetIdWithZero()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setId(0);
     }
 
@@ -253,7 +255,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetIdWithNegativeInt()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setId(-5);
     }
 
@@ -262,7 +264,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testCorrectSetId()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->setId(1);
         $row = $register->getId();
         $this->assertSame(1, $row);
@@ -274,7 +276,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testAddFieldWithIncorrectName()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->addField('%$#%', 2, 'int');
     }
 
@@ -284,7 +286,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testAddFieldWithIncorrectColumn()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->addField('name', 2.5, 'int');
     }
 
@@ -294,7 +296,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testAddFieldWithIncorrectType()
     {
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->addField('name', 2,  'int');
     }
 
@@ -304,14 +306,14 @@ class WizardRegisterTest extends TestCase
     public function testCorrectAddField()
     {
         $int = new Decimal(2, 1, 0, 10);
-        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->addField('name', 2,  $int);
         $array = $register->getFields();
-        $this->assertTrue(isset($array['name']));
+        $this->assertArrayHasKey('name', $array);
         $this->assertSame(2, $array['name']['column']);
         $this->assertTrue(is_a($array['name']['type'], Decimal::class));
         $register->removeField('name');
         $array = $register->getFields();
-        $this->assertFalse(isset($array['name']));
+        $this->assertArrayNotHasKey('name', $array);
     }
 }
