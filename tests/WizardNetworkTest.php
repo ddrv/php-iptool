@@ -4,11 +4,10 @@ namespace Ddrv\Tests\Iptool;
 use PHPUnit\Framework\TestCase;
 use Ddrv\Iptool\Wizard\Network;
 use Ddrv\Iptool\Wizard\Register;
-use Ddrv\Iptool\Wizard;
 use Ddrv\Iptool\Wizard\Types\Decimal;
 
 /**
- * @covers Wizard
+ * @covers Network
  */
 class WizardNetworkTest extends TestCase
 {

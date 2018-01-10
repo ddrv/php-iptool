@@ -16,6 +16,7 @@ class WizardTypesTest extends TestCase
     public function testCreateDecimalTypeWithIncorrectPrecision()
     {
         $type = new Decimal(array());
+        unset($type);
     }
 
     /**
@@ -25,6 +26,7 @@ class WizardTypesTest extends TestCase
     public function testCreateDecimalTypeWithIncorrectMode()
     {
         $type = new Decimal(2, 7);
+        unset($type);
     }
 
     /**
@@ -34,6 +36,7 @@ class WizardTypesTest extends TestCase
     public function testCreateDecimalTypeWithStringMode()
     {
         $type = new Decimal(2, 'mode');
+        unset($type);
     }
 
     /**
@@ -43,6 +46,7 @@ class WizardTypesTest extends TestCase
     public function testCreateDecimalTypeWithStringMin()
     {
         $type = new Decimal(2, 2, 'min');
+        unset($type);
     }
 
     /**
@@ -52,6 +56,7 @@ class WizardTypesTest extends TestCase
     public function testCreateDecimalTypeWithStringMax()
     {
         $type = new Decimal(2, 2, 1,'max');
+        unset($type);
     }
 
     /**
@@ -61,6 +66,7 @@ class WizardTypesTest extends TestCase
     public function testCreateDecimalTypeWithMinGreaterMax()
     {
         $type = new Decimal(2, 2, 100,99.99);
+        unset($type);
     }
 
     /**

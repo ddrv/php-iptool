@@ -3,11 +3,10 @@ namespace Ddrv\Tests\Iptool;
 
 use PHPUnit\Framework\TestCase;
 use Ddrv\Iptool\Wizard\Register;
-use Ddrv\Iptool\Wizard;
 use Ddrv\Iptool\Wizard\Types\Decimal;
 
 /**
- * @covers Wizard
+ * @covers Register
  */
 class WizardRegisterTest extends TestCase
 {
