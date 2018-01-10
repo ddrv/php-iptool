@@ -7,6 +7,7 @@ use Ddrv\Iptool\Wizard\Network;
 /**
  * Class Wizard
  *
+ * @const int FORMAT_VERSION
  * @property string $tmpDir
  * @property string $author
  * @property string $license
@@ -15,6 +16,11 @@ use Ddrv\Iptool\Wizard\Network;
  */
 class Wizard
 {
+    /**
+     * @const int
+     */
+    const FORMAT_VERSION = 1;
+
     /**
      * @var string
      */
