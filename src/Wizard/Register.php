@@ -2,6 +2,8 @@
 
 namespace Ddrv\Iptool\Wizard;
 
+use Ddrv\Iptool\Wizard\TypeAbstract;
+
 /**
  * Class Register
  *
@@ -76,6 +78,9 @@ class Register extends CsvAbstract
         }
         if (!is_int($column) || $column < 1) {
             throw new \InvalidArgumentException('column must be positive integer');
+        }
+        if (!($type instanceof TypeAbstract)) {
+            throw new \InvalidArgumentException('type incorrect');
         }
         $this->fields[$name] = array(
             'column' => $column,

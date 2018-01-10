@@ -4,6 +4,7 @@ namespace Ddrv\Tests\Iptool;
 use PHPUnit\Framework\TestCase;
 use Ddrv\Iptool\Iptool;
 use Ddrv\Iptool\Wizard;
+use Ddrv\Iptool\Wizard\Types\Decimal;
 
 /**
  * @covers Wizard
@@ -285,5 +286,32 @@ class WizardRegisterTest extends TestCase
     {
         $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
         $register->addField('name', 2.5, 'int');
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage type incorrect
+     */
+    public function testAddFieldWithIncorrectType()
+    {
+        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register->addField('name', 2,  'int');
+    }
+
+    /**
+     * Correct addField.
+     */
+    public function testCorrectAddField()
+    {
+        $int = new Decimal(2, 1, 0, 10);
+        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register->addField('name', 2,  $int);
+        $array = $register->getFields();
+        $this->assertTrue(isset($array['name']));
+        $this->assertSame(2, $array['name']['column']);
+        $this->assertTrue(is_a($array['name']['type'], Decimal::class));
+        $register->removeField('name');
+        $array = $register->getFields();
+        $this->assertFalse(isset($array['name']));
     }
 }
