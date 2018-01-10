@@ -3,7 +3,7 @@ namespace Ddrv\Tests\Iptool;
 
 use PHPUnit\Framework\TestCase;
 use Ddrv\Iptool\Wizard\Register;
-use Ddrv\Iptool\Wizard\Types\Decimal;
+use Ddrv\Iptool\Wizard\Types\NumericType;
 
 /**
  * @covers Register
@@ -304,13 +304,13 @@ class WizardRegisterTest extends TestCase
      */
     public function testCorrectAddField()
     {
-        $int = new Decimal(2, 1, 0, 10);
+        $int = new NumericType(2, 1, 0, 10);
         $register = new Register(__DIR__.'/csv/simple/info.csv');
         $register->addField('name', 2,  $int);
         $array = $register->getFields();
         $this->assertArrayHasKey('name', $array);
         $this->assertSame(2, $array['name']['column']);
-        $this->assertTrue(is_a($array['name']['type'], Decimal::class));
+        $this->assertTrue(is_a($array['name']['type'], NumericType::class));
         $register->removeField('name');
         $array = $register->getFields();
         $this->assertArrayNotHasKey('name', $array);

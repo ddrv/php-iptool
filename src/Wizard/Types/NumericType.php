@@ -5,14 +5,14 @@ namespace Ddrv\Iptool\Wizard\Types;
 use Ddrv\Iptool\Wizard\TypeAbstract;
 
 /**
- * Class Decimal
+ * Class NumericType
  *
  * @property int $precision
  * @property int|float|double|null $min
  * @property int|float|double|null $max
  * @property int $mode
  */
-class Decimal extends TypeAbstract
+class NumericType extends TypeAbstract
 {
     /**
      * @var int
@@ -35,7 +35,7 @@ class Decimal extends TypeAbstract
     protected $mode = \PHP_ROUND_HALF_DOWN;
 
     /**
-     * Decimal constructor.
+     * NumericType constructor.
      *
      * @param int $precision
      * @param int $mode

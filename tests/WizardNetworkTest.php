@@ -4,7 +4,7 @@ namespace Ddrv\Tests\Iptool;
 use PHPUnit\Framework\TestCase;
 use Ddrv\Iptool\Wizard\Network;
 use Ddrv\Iptool\Wizard\Register;
-use Ddrv\Iptool\Wizard\Types\Decimal;
+use Ddrv\Iptool\Wizard\Types\NumericType;
 
 /**
  * @covers Network
@@ -381,7 +381,7 @@ class WizardNetworkTest extends TestCase
     public function testCorrectAddRegister()
     {
         $register = new Register(__DIR__.'/csv/simple/info.csv');
-        $register->addField('field1', 1, new Decimal());
+        $register->addField('field1', 1, new NumericType());
         $network = new Network(__DIR__.'/csv/simple/networks.csv', 'ip', 1, 2);
         $network->addRegister('register1', 2, $register);
         $data = $network->getRegisters();
