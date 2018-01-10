@@ -1,6 +1,6 @@
 {
   "name": "ddrv/iptool",
-  "version":"1.0.10",
+  "version": "2.0.0",
   "type": "library",
   "description": "Define data by IP Address",
   "keywords": ["iptool", "ip", "geo", "geoip", "info", "data", "ip-database", "search", "ip-search"],
@@ -12,14 +12,15 @@
       "homepage": "https://ddrv.ru"
     }
   ],
-  "require":{
-    "php":">=5.3"
+  "require": {
+    "php": ">=5.3",
+    "ext-mbstring": "*"
   },
-  "require-dev":{
-    "phpunit/phpunit":">=5.1"
+  "require-dev": {
+    "phpunit/phpunit": ">=5.1"
   },
   "suggest": {
-    "ext-pdo_sqlite": "Need for Convertor"
+    "ext-pdo_sqlite": "Need for Wizard"
   },
   "autoload": {
     "psr-4": {
