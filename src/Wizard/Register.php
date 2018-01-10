@@ -13,7 +13,7 @@ class Register extends CsvAbstract
     /**
      * @var int
      */
-    protected $id=0;
+    protected $id=1;
 
     /**
      * @var array
@@ -43,6 +43,9 @@ class Register extends CsvAbstract
      */
     public function setId($column)
     {
+        if (!is_int($column) || $column < 1) {
+            throw new \InvalidArgumentException('column must be positive integer');
+        }
         $this->id = $column;
         return $this;
     }
@@ -64,9 +67,16 @@ class Register extends CsvAbstract
      * @param int $column
      * @param string $type
      * @return $this
+     * @throws \InvalidArgumentException
      */
     public function addField($name, $column, $type)
     {
+        if (!$this->checkName($name)) {
+            throw new \InvalidArgumentException('incorrect name');
+        }
+        if (!is_int($column) || $column < 1) {
+            throw new \InvalidArgumentException('column must be positive integer');
+        }
         $this->fields[$name] = array(
             'column' => $column,
             'type' => $type,

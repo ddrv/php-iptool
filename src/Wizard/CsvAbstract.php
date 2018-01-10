@@ -115,4 +115,15 @@ abstract class CsvAbstract
         );
         $this->setCsv();
     }
+
+    /**
+     * Check name.
+     *
+     * @param string $name
+     * @return bool
+     */
+    protected function checkName($name)
+    {
+        return preg_match('/^[a-z0-9\.\-_]+$/ui', $name);
+    }
 }

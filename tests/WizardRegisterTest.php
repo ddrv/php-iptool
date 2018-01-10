@@ -196,6 +196,16 @@ class WizardRegisterTest extends TestCase
     }
 
     /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage row must be positive integer
+     */
+    public function testSetFirstRowWithNegativeInt()
+    {
+        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register->setFirstRow(-1);
+    }
+
+    /**
      * Correct set first row
      */
     public function testCorrectSetFirstRow()
@@ -207,13 +217,73 @@ class WizardRegisterTest extends TestCase
     }
 
     /**
-     * @-expectedException \InvalidArgumentException
-     * @-expectedExceptionMessage column must be positive integer
-
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage column must be positive integer
+     */
     public function testSetIdWithString()
     {
         $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
         $register->setId('first');
     }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage column must be positive integer
      */
+    public function testSetIdWithFloat()
+    {
+        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register->setId(2.5);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage column must be positive integer
+     */
+    public function testSetIdWithZero()
+    {
+        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register->setId(0);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage column must be positive integer
+     */
+    public function testSetIdWithNegativeInt()
+    {
+        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register->setId(-5);
+    }
+
+    /**
+     * Correct set first row
+     */
+    public function testCorrectSetId()
+    {
+        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register->setId(1);
+        $row = $register->getId();
+        $this->assertSame(1, $row);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage incorrect name
+     */
+    public function testAddFieldWithIncorrectName()
+    {
+        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register->addField('%$#%', 2, 'int');
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage column must be positive integer
+     */
+    public function testAddFieldWithIncorrectColumn()
+    {
+        $register = new \Ddrv\Iptool\Wizard\Register(__DIR__.'/csv/simple/info.csv');
+        $register->addField('name', 2.5, 'int');
+    }
 }
