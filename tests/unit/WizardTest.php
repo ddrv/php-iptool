@@ -10,6 +10,8 @@ use Ddrv\Iptool\Wizard;
 class WizardTest extends TestCase
 {
     /**
+     * Create object with incorrect tmpDir.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage incorrect tmpDir
      */
@@ -20,6 +22,8 @@ class WizardTest extends TestCase
     }
 
     /**
+     * Create object with not directory tmpDir.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage tmpDir is not a directory
      */
@@ -30,6 +34,8 @@ class WizardTest extends TestCase
     }
 
     /**
+     * Test setAuthor with array.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage incorrect author
      */
@@ -41,6 +47,8 @@ class WizardTest extends TestCase
     }
 
     /**
+     * Test setLicense with array.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage incorrect license
      */
@@ -52,6 +60,8 @@ class WizardTest extends TestCase
     }
 
     /**
+     * Test setTime with array.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage incorrect time
      */
@@ -63,6 +73,8 @@ class WizardTest extends TestCase
     }
 
     /**
+     * Test setTime with string.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage incorrect time
      */
@@ -74,6 +86,8 @@ class WizardTest extends TestCase
     }
 
     /**
+     * Test setAuthor with float.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage incorrect time
      */
@@ -85,6 +99,8 @@ class WizardTest extends TestCase
     }
 
     /**
+     * Test setAuthor with negative.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage incorrect time
      */
@@ -96,6 +112,8 @@ class WizardTest extends TestCase
     }
 
     /**
+     * Test compile with array filename.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage incorrect filename
      */

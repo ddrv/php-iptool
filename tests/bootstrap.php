@@ -1,17 +1,23 @@
 <?php
-include __DIR__.DIRECTORY_SEPARATOR.'../src/Iptool.php';
-include __DIR__.DIRECTORY_SEPARATOR.'../src/Converter.php';
-include __DIR__.DIRECTORY_SEPARATOR.'../src/Wizard.php';
-include __DIR__.DIRECTORY_SEPARATOR.'../src/Wizard/CsvAbstract.php';
-include __DIR__.DIRECTORY_SEPARATOR.'../src/Wizard/Register.php';
-include __DIR__.DIRECTORY_SEPARATOR.'../src/Wizard/Network.php';
-include __DIR__.DIRECTORY_SEPARATOR.'../src/Wizard/TypeAbstract.php';
-include __DIR__.DIRECTORY_SEPARATOR.'../src/Wizard/Types/NumericType.php';
-include __DIR__.DIRECTORY_SEPARATOR.'../src/Wizard/Types/StringType.php';
 
-/* fix for PHP 7 */
+const IPTOOL_TEST_CSV_DIR = __DIR__.DIRECTORY_SEPARATOR.'csv';
+const IPTOOL_TEST_TMP_DIR = __DIR__.DIRECTORY_SEPARATOR.'tmp';
+$srcDir = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'src';
+include $srcDir.DIRECTORY_SEPARATOR.'Iptool.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'CsvAbstract.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Register.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Network.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'TypeAbstract.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Types'.DIRECTORY_SEPARATOR.'NumericType.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Types'.DIRECTORY_SEPARATOR.'StringType.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Types'.DIRECTORY_SEPARATOR.'AddressType.php';
 
-if (!class_exists('\PHPUnit\Framework\TestCase') && class_exists('\PHPUnit_Framework_TestCase')) {
-    class_alias('\PHPUnit_Framework_TestCase', str_replace('_','\\','\PHPUnit_Framework_TestCase'));
+/*
+ * fix for using PHPUnit as composer package and PEAR extension
+ */
+$composerClassName = '\PHPUnit\Framework\TestCase';
+$pearClassName = '\PHPUnit_Framework_TestCase';
+if (!class_exists($composerClassName) && class_exists($pearClassName)) {
+    class_alias($pearClassName, $composerClassName);
 }
-/**/

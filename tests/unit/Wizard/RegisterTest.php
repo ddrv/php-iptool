@@ -1,5 +1,6 @@
 <?php
-namespace Ddrv\Tests\Iptool;
+
+namespace Ddrv\Tests\Iptool\Wizard;
 
 use PHPUnit\Framework\TestCase;
 use Ddrv\Iptool\Wizard\Register;
@@ -7,10 +8,19 @@ use Ddrv\Iptool\Wizard\Types\NumericType;
 
 /**
  * @covers Register
+ *
+ * @property string $registerCsv
  */
-class WizardRegisterTest extends TestCase
+class RegisterTest extends TestCase
 {
     /**
+     * @var string
+     */
+    protected $registerCsv = \IPTOOL_TEST_CSV_DIR.DIRECTORY_SEPARATOR.'simple'.DIRECTORY_SEPARATOR.'countries.csv';
+
+    /**
+     * Create object with incorrect filename.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage parameter file must be string
      */
@@ -21,6 +31,8 @@ class WizardRegisterTest extends TestCase
     }
 
     /**
+     * Create object with nonexistent file.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage can not read the file
      */
@@ -31,112 +43,134 @@ class WizardRegisterTest extends TestCase
     }
 
     /**
+     * Test setCsv with array encoding.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage encoding must be string
      */
-    public function testSetCsvWithNonStringEncoding()
+    public function testSetCsvWithArrayEncoding()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv(array());
     }
 
     /**
+     * Test setCsv with unsupported encoding.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage encoding unsupported
      */
     public function testSetCsvWithUnsupportedEncoding()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('unsupportedEncoding');
     }
 
     /**
+     * Test setCsv with array delimiter.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage delimiter must be string with a length of 1 character
      */
-    public function testSetCsvWithNonStringDelimiter()
+    public function testSetCsvWithArrayDelimiter()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('UTF-8', array());
     }
 
     /**
+     * Test setCsv with longer delimiter.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage delimiter must be string with a length of 1 character
      */
     public function testSetCsvWithLongerDelimiter()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('UTF-8', 'word');
     }
 
     /**
+     * Test setCsv with empty string delimiter.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage delimiter must be string with a length of 1 character
      */
-    public function testSetCsvWithShortDelimiter()
+    public function testSetCsvWithEmptyStringDelimiter()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('UTF-8', '');
     }
 
     /**
+     * Test setCsv with array closure.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage enclosure must be string with a length of 1 character
      */
-    public function testSetCsvWithNonStringEnclosure()
+    public function testSetCsvWithArrayEnclosure()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('UTF-8', ',', array());
     }
 
     /**
+     * Test setCsv with longer closure.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage enclosure must be string with a length of 1 character
      */
     public function testSetCsvWithLongerEnclosure()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('UTF-8', ',','word');
     }
 
     /**
+     * Test setCsv with short closure.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage enclosure must be string with a length of 1 character
      */
     public function testSetCsvWithShortEnclosure()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('UTF-8', ',','');
     }
 
     /**
+     * Test setCsv with array escape.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage escape must be string with a length of 1 character
      */
-    public function testSetCsvWithNonStringEscape()
+    public function testSetCsvWithArrayEscape()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('UTF-8', ',', '"', array());
     }
 
     /**
+     * Test setCsv with longer escape.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage escape must be string with a length of 1 character
      */
     public function testSetCsvWithLongerEscape()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('UTF-8', ',','"', 'word');
     }
 
     /**
+     * Test setCsv with short escape.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage escape must be string with a length of 1 character
      */
     public function testSetCsvWithShortEscape()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('UTF-8', ',','"', '');
     }
 
@@ -145,7 +179,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testDefaultCsvSets()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $sets = $register->getCsv();
         $this->assertSame('UTF-8',$sets['encoding']);
         $this->assertSame(',',$sets['delimiter']);
@@ -158,7 +192,7 @@ class WizardRegisterTest extends TestCase
      */
     public function testSetCsv()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setCsv('ASCII', ';','\'', '/');
         $sets = $register->getCsv();
         $this->assertSame('ASCII',$sets['encoding']);
@@ -168,144 +202,154 @@ class WizardRegisterTest extends TestCase
     }
 
     /**
+     * Test setFirstRow with string.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage row must be positive integer
      */
     public function testSetFirstRowWithString()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setFirstRow('first');
     }
 
     /**
+     * Test setFirstRow with float.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage row must be positive integer
      */
     public function testSetFirstRowWithFloat()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setFirstRow(6.4);
     }
 
     /**
+     * Test setFirstRow with zero.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage row must be positive integer
      */
     public function testSetFirstRowWithZero()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setFirstRow(0);
     }
 
     /**
+     * Test setFirstRow with negative.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage row must be positive integer
      */
     public function testSetFirstRowWithNegativeInt()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setFirstRow(-1);
     }
 
     /**
-     * Correct set first row
+     * Test setFirstRow with correct value.
      */
     public function testCorrectSetFirstRow()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setFirstRow(2);
         $row = $register->getFirstRow();
         $this->assertSame(2, $row);
     }
 
     /**
+     * Test setId with string.
+     *
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage column must be positive integer
+     * @expectedExceptionMessage column must be positive integer or 0
      */
     public function testSetIdWithString()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setId('first');
     }
 
     /**
+     * Test setId with float.
+     *
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage column must be positive integer
+     * @expectedExceptionMessage column must be positive integer or 0
      */
     public function testSetIdWithFloat()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setId(2.5);
     }
 
     /**
+     * Test setId with negative.
+     *
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage column must be positive integer
-     */
-    public function testSetIdWithZero()
-    {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
-        $register->setId(0);
-    }
-
-    /**
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage column must be positive integer
+     * @expectedExceptionMessage column must be positive integer or 0
      */
     public function testSetIdWithNegativeInt()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setId(-5);
     }
 
     /**
-     * Correct set first row
+     * Test setId with correct value.
      */
     public function testCorrectSetId()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->setId(1);
         $row = $register->getId();
         $this->assertSame(1, $row);
     }
 
     /**
+     * Test AddField with incorrect name.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage incorrect name
      */
     public function testAddFieldWithIncorrectName()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->addField('%$#%', 2, 'int');
     }
 
     /**
+     * Test AddField with incorrect column.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage column must be positive integer
      */
     public function testAddFieldWithIncorrectColumn()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->addField('name', 2.5, 'int');
     }
 
     /**
+     * Test AddField with incorrect type.
+     *
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage type incorrect
      */
     public function testAddFieldWithIncorrectType()
     {
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->addField('name', 2,  'int');
     }
 
     /**
-     * Correct addField.
+     * Test AddField with correct values.
      */
     public function testCorrectAddField()
     {
         $int = new NumericType(2, 1, 0, 10);
-        $register = new Register(__DIR__.'/csv/simple/info.csv');
+        $register = new Register($this->registerCsv);
         $register->addField('name', 2,  $int);
         $array = $register->getFields();
         $this->assertArrayHasKey('name', $array);
