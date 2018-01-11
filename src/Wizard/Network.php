@@ -2,10 +2,15 @@
 
 namespace Ddrv\Iptool\Wizard;
 
+use Ddrv\Iptool\Wizard\Types\AddressType;
+
 /**
  * Class Network
  *
  * @property array $registers
+ * @property int $firstIpColumn
+ * @property int $lastIpColumn
+ * @property AddressType $ipType
  */
 class Network extends CsvAbstract
 {
@@ -15,10 +20,25 @@ class Network extends CsvAbstract
     protected $registers;
 
     /**
+     * @var int
+     */
+    protected $firstIpColumn;
+
+    /**
+     * @var int
+     */
+    protected $lastIpColumn;
+
+    /**
+     * @var AddressType
+     */
+    protected $ipType;
+
+    /**
      * Network constructor.
      *
      * @param string $file CSV source file
-     * @param string $ipType
+     * @param AddressType $ipType
      * @param integer $firstIpColumn
      * @param integer $lastIpColumn
      * @throws \InvalidArgumentException
@@ -36,6 +56,12 @@ class Network extends CsvAbstract
         if (!is_int($lastIpColumn) || $lastIpColumn < 1) {
             throw new \InvalidArgumentException('lastIpColumn must be positive integer');
         }
+        if (!($ipType instanceof AddressType)) {
+            throw new \InvalidArgumentException('incorrect ipType');
+        }
+        $this->firstIpColumn = $firstIpColumn;
+        $this->lastIpColumn = $lastIpColumn;
+        $this->ipType = $ipType;
     }
 
     /**
@@ -90,5 +116,33 @@ class Network extends CsvAbstract
     public function getRegisters()
     {
         return $this->registers;
+    }
+
+    /**
+     * Get first ip column.
+     *
+     * @return int
+     */
+    public function getFistIpColumn() {
+        return $this->firstIpColumn;
+    }
+
+    /**
+     * Get last ip column.
+     *
+     * @return int
+     */
+    public function getLastIpColumn() {
+        return $this->lastIpColumn;
+    }
+
+    /**
+     * Get ipType.
+     *
+     * @return AddressType
+     */
+    public function getIpType()
+    {
+        return $this->ipType;
     }
 }

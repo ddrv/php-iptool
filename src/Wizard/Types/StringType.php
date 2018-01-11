@@ -41,6 +41,11 @@ class StringType extends TypeAbstract
     protected $maxLength;
 
     /**
+     * @var string
+     */
+    protected $packFormatKey = 'A';
+
+    /**
      * StringType constructor.
      *
      * @param int $transform
@@ -126,5 +131,11 @@ class StringType extends TypeAbstract
     public function getMaxLength()
     {
         return $this->maxLength;
+    }
+
+    public function updatePackFormat($value)
+    {
+        $length = strlen($value);
+        if ($length > $this->packFormatLength) $this->packFormatLength = $length;
     }
 }

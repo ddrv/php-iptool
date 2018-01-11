@@ -2,7 +2,8 @@
 
 namespace Ddrv\Iptool\Wizard;
 
-use Ddrv\Iptool\Wizard\TypeAbstract;
+use Ddrv\Iptool\Wizard\Types\NumericType;
+use Ddrv\Iptool\Wizard\Types\StringType;
 
 /**
  * Class Register
@@ -45,8 +46,8 @@ class Register extends CsvAbstract
      */
     public function setId($column)
     {
-        if (!is_int($column) || $column < 1) {
-            throw new \InvalidArgumentException('column must be positive integer');
+        if (!is_int($column) || $column < 0) {
+            throw new \InvalidArgumentException('column must be positive integer or 0');
         }
         $this->id = $column;
         return $this;
@@ -67,7 +68,7 @@ class Register extends CsvAbstract
      *
      * @param string $name
      * @param int $column
-     * @param string $type
+     * @param NumericType|StringType $type
      * @return $this
      * @throws \InvalidArgumentException
      */

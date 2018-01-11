@@ -10,7 +10,11 @@ use Ddrv\Iptool\Wizard\TypeAbstract;
  * @property int $precision
  * @property int|float|double|null $min
  * @property int|float|double|null $max
+ * @property int|float|double|null $minValue
+ * @property int|float|double|null $maxValue
  * @property int $mode
+ * @property string $packFormatKey
+ * @property int|null $packFormatLength
  */
 class NumericType extends TypeAbstract
 {
@@ -30,9 +34,24 @@ class NumericType extends TypeAbstract
     protected $max;
 
     /**
+     * @var int|float|double|null
+     */
+    protected $minValue;
+
+    /**
+     * @var int|float|double|null
+     */
+    protected $maxValue;
+
+    /**
      * @var int
      */
     protected $mode = \PHP_ROUND_HALF_DOWN;
+
+    /**
+     * @var string
+     */
+    protected $packFormatKey = 'C';
 
     /**
      * NumericType constructor.
@@ -70,10 +89,11 @@ class NumericType extends TypeAbstract
      *
      * @param int $precision
      * @return $this
+     * @throws \InvalidArgumentException
      */
     public function setPrecision($precision = 0)
     {
-        if (!is_integer($precision) || $precision < 0) {
+        if (!is_int($precision) || $precision < 0) {
             throw new \InvalidArgumentException('precision must be positive integer or 0');
         }
         $this->precision = $precision;
@@ -172,5 +192,51 @@ class NumericType extends TypeAbstract
     public function getMin()
     {
         return $this->min;
+    }
+
+    /**
+     * Get format for pack() function.
+     *
+     * @return string
+     */
+    public function getPackFormat()
+    {
+        if ($this->precision == 0) {
+            $this->packFormatKey = 'L';
+            if ($this->maxValue < (1 << 4) && $this->minValue >= -(1 << 4)) {
+                $this->packFormatKey = 'c';
+            }
+            if ($this->maxValue < (1 << 8) && $this->minValue >= 0) {
+                $this->packFormatKey = 'C';
+            }
+            if ($this->maxValue < (1 << 8) && $this->minValue >= -(1 << 8)) {
+                $this->packFormatKey = 's';
+            }
+            if ($this->maxValue < (1 << 16) && $this->minValue >= 0) {
+                $this->packFormatKey = 'S';
+            }
+            if ($this->maxValue < (1 << 16) && $this->minValue >= -(1 << 16)) {
+                $this->packFormatKey = 'l';
+            }
+            if ($this->maxValue < (1 << 32) && $this->minValue >= 0) {
+                $this->packFormatKey = 'L';
+            }
+        } else {
+            $this->packFormatKey = 'f';
+        }
+        return parent::getPackFormat();
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function updatePackFormat($value)
+    {
+        if ($value < $this->minValue) {
+            $this->minValue = $value;
+        }
+        if ($value > $this->maxValue) {
+            $this->maxValue = $value;
+        }
     }
 }
