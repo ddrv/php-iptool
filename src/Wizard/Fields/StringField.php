@@ -1,8 +1,8 @@
 <?php
 
-namespace Ddrv\Iptool\Wizard\Types;
+namespace Ddrv\Iptool\Wizard\Fields;
 
-use Ddrv\Iptool\Wizard\TypeAbstract;
+use Ddrv\Iptool\Wizard\FieldAbstract;
 
 /**
  * Class StringType
@@ -13,7 +13,7 @@ use Ddrv\Iptool\Wizard\TypeAbstract;
  * @property string $transform
  * @property int|null $maxLength
  */
-class StringType extends TypeAbstract
+class StringField extends FieldAbstract
 {
     /**
      * @const int

@@ -1,8 +1,8 @@
 <?php
 
-namespace Ddrv\Iptool\Wizard\Types;
+namespace Ddrv\Iptool\Wizard\Fields;
 
-use Ddrv\Iptool\Wizard\TypeAbstract;
+use Ddrv\Iptool\Wizard\FieldAbstract;
 
 /**
  * Class NumericType
@@ -16,7 +16,7 @@ use Ddrv\Iptool\Wizard\TypeAbstract;
  * @property string $packFormatKey
  * @property int|null $packFormatLength
  */
-class NumericType extends TypeAbstract
+class NumericField extends FieldAbstract
 {
     /**
      * @var int

@@ -4,7 +4,7 @@ namespace Ddrv\Iptool;
 
 use Ddrv\Iptool\Wizard\Network;
 use Ddrv\Iptool\Wizard\Register;
-use Ddrv\Iptool\Wizard\TypeAbstract;
+use Ddrv\Iptool\Wizard\FieldAbstract;
 use PDO;
 use PDOStatement;
 use PDOException;
@@ -160,7 +160,8 @@ class Wizard
      * Compile database.
      *
      * @param string $filename
-     * @throws PDOException
+     * @throws \PDOException
+     * @throws \ErrorException
      */
     public function compile($filename)
     {
@@ -212,7 +213,7 @@ class Wizard
             CREATE INDEX `value` ON `_ips` (`value`);
         ';
         $this->pdo->exec($sql);
-        $this->insertIps = $this->pdo->prepare('INSERT '.'INTO `_ips` (`ip`,`action`,`parameter`,`value`) VALUES (:ip,:action,:parameter,:value);');
+        $this->insertIps = $this->pdo->prepare('INSERT INTO `_ips` (`ip`,`action`,`parameter`,`value`) VALUES (:ip,:action,:parameter,:value);');
         $this->insertIps->execute(array(
             'ip' => 0,
             'action' => 'add',
@@ -252,9 +253,8 @@ class Wizard
             if (!isset($row[$lastIpColumn])) {
                 throw new \ErrorException('have not column with last ip address');
             }
-            // todo: fix get last ip for inetnum type
-            $firstIp = $network->getIpType()->getValidValue($row[$firstIpColumn])[0];
-            $lastIp = $network->getIpType()->getValidValue($row[$lastIpColumn])[0];
+            $firstIp = $network->getLongIp($row[$firstIpColumn], false);
+            $lastIp = $network->getLongIp($row[$lastIpColumn], true);
             foreach ($registers as $register => $column) {
                 $value = isset($row[$column]) ? $row[$column] : null;
                 $this->insertIps->execute(array(
@@ -273,7 +273,6 @@ class Wizard
                     $this->pdo->exec('UPDATE `'.$register.'` SET `_used`=\'1\' WHERE `_pk` = \''.addslashes($value).'\';');
                 }
             }
-
         }
         $this->pdo->commit();
     }
@@ -325,7 +324,7 @@ class Wizard
             foreach ($columns as $field=>$data) {
                 $column = $data['column']-1;
                 /**
-                 * @var TypeAbstract $type
+                 * @var FieldAbstract $type
                  */
                 $type = $data['type'];
                 $value = isset($row[$column])?$row[$column]:null;

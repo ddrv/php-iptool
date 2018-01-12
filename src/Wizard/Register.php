@@ -2,8 +2,8 @@
 
 namespace Ddrv\Iptool\Wizard;
 
-use Ddrv\Iptool\Wizard\Types\NumericType;
-use Ddrv\Iptool\Wizard\Types\StringType;
+use Ddrv\Iptool\Wizard\Fields\NumericField;
+use Ddrv\Iptool\Wizard\Fields\StringField;
 
 /**
  * Class Register
@@ -68,7 +68,7 @@ class Register extends CsvAbstract
      *
      * @param string $name
      * @param int $column
-     * @param NumericType|StringType $type
+     * @param NumericField|StringField $type
      * @return $this
      * @throws \InvalidArgumentException
      */
@@ -80,7 +80,7 @@ class Register extends CsvAbstract
         if (!is_int($column) || $column < 1) {
             throw new \InvalidArgumentException('column must be positive integer');
         }
-        if (!($type instanceof TypeAbstract)) {
+        if (!($type instanceof FieldAbstract)) {
             throw new \InvalidArgumentException('type incorrect');
         }
         $this->fields[$name] = array(

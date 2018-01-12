@@ -8,7 +8,7 @@ namespace Ddrv\Iptool\Wizard;
  * @property string $packFormatKey
  * @property int|null $packFormatLength
  */
-abstract class TypeAbstract
+abstract class FieldAbstract
 {
 
     /**
