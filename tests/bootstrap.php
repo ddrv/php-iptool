@@ -8,10 +8,9 @@ include $srcDir.DIRECTORY_SEPARATOR.'Wizard.php';
 include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'CsvAbstract.php';
 include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Register.php';
 include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Network.php';
-include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'TypeAbstract.php';
-include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Types'.DIRECTORY_SEPARATOR.'NumericType.php';
-include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Types'.DIRECTORY_SEPARATOR.'StringType.php';
-include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Types'.DIRECTORY_SEPARATOR.'AddressType.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'FieldAbstract.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Fields'.DIRECTORY_SEPARATOR.'NumericField.php';
+include $srcDir.DIRECTORY_SEPARATOR.'Wizard'.DIRECTORY_SEPARATOR.'Fields'.DIRECTORY_SEPARATOR.'StringField.php';
 
 /*
  * fix for using PHPUnit as composer package and PEAR extension

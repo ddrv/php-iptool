@@ -2,18 +2,17 @@
 
 namespace Ddrv\Tests\Iptool\Wizard;
 
-use Ddrv\Iptool\Wizard\Types\AddressType;
 use PHPUnit\Framework\TestCase;
 use Ddrv\Iptool\Wizard\Network;
 use Ddrv\Iptool\Wizard\Register;
-use Ddrv\Iptool\Wizard\Types\NumericType;
+use Ddrv\Iptool\Wizard\Fields\NumericField;
 
 /**
  * @covers Network
  *
  * @property string $networksCsv
  * @property string $registerCsv
- * @property AddressType $ipType
+ * @property array $correctIpTypes
  */
 class NetworkTest extends TestCase
 {
@@ -29,15 +28,13 @@ class NetworkTest extends TestCase
     protected $registerCsv = \IPTOOL_TEST_CSV_DIR.DIRECTORY_SEPARATOR.'simple'.DIRECTORY_SEPARATOR.'countries.csv';
 
     /**
-     * @var AddressType
+     * @var array
      */
-    protected $ipType;
-
-    public function __construct(string $name = null, array $data = [], string $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        $this->ipType = new AddressType();
-    }
+    protected $correctIpTypes = array(
+        Network::IP_TYPE_ADDRESS,
+        Network::IP_TYPE_LONG,
+        Network::IP_TYPE_INETNUM,
+    );
 
     /**
      * Create object with icorrect filename.
@@ -47,7 +44,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithIncorrectFilename()
     {
-        $network = new Network(-1, $this->ipType, 1, 2);
+        $network = new Network(-1, Network::IP_TYPE_ADDRESS, 1, 2);
         unset($network);
     }
 
@@ -59,7 +56,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithNonexistentFile()
     {
-        $network = new Network('file_not_exists.php', $this->ipType, 1, 2);
+        $network = new Network('file_not_exists.php', Network::IP_TYPE_ADDRESS, 1, 2);
         unset($network);
     }
 
@@ -71,7 +68,10 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithIncorrectIpType()
     {
-        $network = new Network($this->networksCsv, 'ip', 1, 2);
+        do {
+            $incorrectIpType = rand(-100,100);
+        } while (in_array($incorrectIpType,$this->correctIpTypes));
+        $network = new Network($this->networksCsv, $incorrectIpType, 1, 2);
         unset($network);
     }
 
@@ -83,7 +83,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithNegativeFirstIpColumn()
     {
-        $network = new Network($this->networksCsv, $this->ipType, -1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, -1, 2);
         unset($network);
     }
 
@@ -95,7 +95,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithZeroFirstIpColumn()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 0, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 0, 2);
         unset($network);
     }
 
@@ -107,7 +107,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithFloatFirstIpColumn()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 0.5, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 0.5, 2);
         unset($network);
     }
 
@@ -119,7 +119,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithStringFirstIpColumn()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 'a', 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 'a', 2);
         unset($network);
     }
 
@@ -131,7 +131,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithNegativeLastIpColumn()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, -1);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, -1);
         unset($network);
     }
 
@@ -143,7 +143,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithZeroLastIpColumn()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 0);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 0);
         unset($network);
     }
 
@@ -155,7 +155,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithFloatLastIpColumn()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2.5);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2.5);
         unset($network);
     }
 
@@ -167,7 +167,7 @@ class NetworkTest extends TestCase
      */
     public function testCreateWithStringLastIpColumn()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 'b');
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 'b');
         unset($network);
     }
 
@@ -179,7 +179,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithArrayEncoding()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv(array());
     }
 
@@ -191,7 +191,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithUnsupportedEncoding()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('unsupportedEncoding');
     }
 
@@ -203,7 +203,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithArrayDelimiter()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('UTF-8', array());
     }
 
@@ -215,7 +215,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithLongerDelimiter()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('UTF-8', 'word');
     }
 
@@ -227,7 +227,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithShortDelimiter()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('UTF-8', '');
     }
 
@@ -239,7 +239,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithArrayEnclosure()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('UTF-8', ',', array());
     }
 
@@ -251,7 +251,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithLongerEnclosure()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('UTF-8', ',','word');
     }
 
@@ -263,7 +263,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithShortEnclosure()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('UTF-8', ',','');
     }
 
@@ -275,7 +275,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithArrayEscape()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('UTF-8', ',', '"', array());
     }
 
@@ -287,7 +287,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithLongerEscape()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('UTF-8', ',','"', 'word');
     }
 
@@ -299,7 +299,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsvWithShortEscape()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('UTF-8', ',','"', '');
     }
 
@@ -308,7 +308,7 @@ class NetworkTest extends TestCase
      */
     public function testDefaultCsvSets()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $sets = $network->getCsv();
         $this->assertSame('UTF-8',$sets['encoding']);
         $this->assertSame(',',$sets['delimiter']);
@@ -321,7 +321,7 @@ class NetworkTest extends TestCase
      */
     public function testSetCsv()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setCsv('ASCII', ';','\'', '/');
         $sets = $network->getCsv();
         $this->assertSame('ASCII',$sets['encoding']);
@@ -338,7 +338,7 @@ class NetworkTest extends TestCase
      */
     public function testSetFirstRowWithString()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setFirstRow('first');
     }
 
@@ -350,7 +350,7 @@ class NetworkTest extends TestCase
      */
     public function testSetFirstRowWithFloat()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setFirstRow(6.4);
     }
 
@@ -362,7 +362,7 @@ class NetworkTest extends TestCase
      */
     public function testSetFirstRowWithZero()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setFirstRow(0);
     }
 
@@ -374,7 +374,7 @@ class NetworkTest extends TestCase
      */
     public function testSetFirstRowWithNegativeInt()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setFirstRow(-1);
     }
 
@@ -383,7 +383,7 @@ class NetworkTest extends TestCase
      */
     public function testCorrectSetFirstRow()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->setFirstRow(2);
         $row = $network->getFirstRow();
         $this->assertSame(2, $row);
@@ -398,7 +398,7 @@ class NetworkTest extends TestCase
     public function testAddRegisterWithIncorrectName()
     {
         $register = new Register($this->registerCsv);
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->addRegister('%$#%', 2, $register);
     }
 
@@ -411,7 +411,7 @@ class NetworkTest extends TestCase
     public function testAddRegisterWithStringColumn()
     {
         $register = new Register($this->registerCsv);
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->addRegister('name', 'two', $register);
     }
 
@@ -424,7 +424,7 @@ class NetworkTest extends TestCase
     public function testAddRegisterWithFloatColumn()
     {
         $register = new Register($this->registerCsv);
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->addRegister('name', 3.5, $register);
     }
 
@@ -437,7 +437,7 @@ class NetworkTest extends TestCase
     public function testAddRegisterWithZeroColumn()
     {
         $register = new Register($this->registerCsv);
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->addRegister('name', 0, $register);
     }
 
@@ -450,7 +450,7 @@ class NetworkTest extends TestCase
     public function testAddRegisterWithNegativeColumn()
     {
         $register = new Register($this->registerCsv);
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->addRegister('name', -42, $register);
     }
 
@@ -462,7 +462,7 @@ class NetworkTest extends TestCase
      */
     public function testAddRegisterWithIncorrectRegister()
     {
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->addRegister('name', 2, 'register');
     }
 
@@ -475,7 +475,7 @@ class NetworkTest extends TestCase
     public function testAddRegisterWithEmptyFields()
     {
         $register = new Register($this->registerCsv);
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->addRegister('name', 2, $register);
     }
 
@@ -485,13 +485,74 @@ class NetworkTest extends TestCase
     public function testCorrectAddRegister()
     {
         $register = new Register($this->registerCsv);
-        $register->addField('field1', 1, new NumericType());
-        $network = new Network($this->networksCsv, $this->ipType, 1, 2);
+        $register->addField('field1', 1, new NumericField());
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
         $network->addRegister('register1', 2, $register);
         $data = $network->getRegisters();
         $this->assertArrayHasKey('register1', $data);
         $network->removeRegister('register1');
         $data = $network->getRegisters();
         $this->assertArrayNotHasKey('register1', $data);
+    }
+
+    /**
+     * Test parseInetnum with interval.
+     */
+    public function testParseInetnumAsInterval()
+    {
+        $ips = array(
+            rand(0,255).'.'.rand(0,255).'.'.rand(0,255).'.'.rand(0,255),
+            rand(0,255).'.'.rand(0,255).'.'.rand(0,255).'.'.rand(0,255),
+        );
+        sort($ips);
+        $interval = implode(' - ', $ips);
+        $longs = Network::parseInetnum($interval);
+        $this->assertSame(ip2long($ips[0]), $longs[0]);
+        $this->assertSame(ip2long($ips[1]), $longs[1]);
+    }
+
+    /**
+     * Test parseInetnum with inetnum.
+     */
+    public function testParseInetnumAsInetnum()
+    {
+        $longs = Network::parseInetnum('83.8.0.0/13');
+        $this->assertSame(ip2long('83.8.0.0'),$longs[0]);
+        $this->assertSame(ip2long('83.15.255.255'),$longs[1]);
+    }
+
+    /**
+     * Test getLongIp with IPP_TYPE_ADDRESS.
+     */
+    public function testGetLongIpWithAddress()
+    {
+        $network = new Network($this->networksCsv, Network::IP_TYPE_ADDRESS, 1, 2);
+        $ip = rand(0,255).'.'.rand(0,255).'.'.rand(0,255).'.'.rand(0,255).'.';
+        $long = $network->getLongIp($ip);
+        $this->assertSame(ip2long($ip), $long);
+    }
+
+    /**
+     * Test getLongIp with IPP_TYPE_LONG.
+     */
+    public function testGetLongIpWithLong()
+    {
+        $network = new Network($this->networksCsv, Network::IP_TYPE_LONG, 1, 2);
+        $ip = rand(0,255).'.'.rand(0,255).'.'.rand(0,255).'.'.rand(0,255);
+        $long1 = ip2long($ip);
+        $long2 = $network->getLongIp($long1);
+        $this->assertSame($long1, $long2);
+    }
+
+    /**
+     * Test getLongIp with IPP_TYPE_INETNUM.
+     */
+    public function testGetLongIpWithInetnum()
+    {
+        $network = new Network($this->networksCsv, Network::IP_TYPE_INETNUM, 1, 2);
+        $first = $network->getLongIp('83.8.0.0/13');
+        $last  = $network->getLongIp('83.8.0.0/13', true);
+        $this->assertSame(ip2long('83.8.0.0'),$first);
+        $this->assertSame(ip2long('83.15.255.255'),$last);
     }
 }

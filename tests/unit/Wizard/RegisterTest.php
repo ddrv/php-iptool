@@ -4,7 +4,7 @@ namespace Ddrv\Tests\Iptool\Wizard;
 
 use PHPUnit\Framework\TestCase;
 use Ddrv\Iptool\Wizard\Register;
-use Ddrv\Iptool\Wizard\Types\NumericType;
+use Ddrv\Iptool\Wizard\Fields\NumericField;
 
 /**
  * @covers Register
@@ -315,8 +315,9 @@ class RegisterTest extends TestCase
      */
     public function testAddFieldWithIncorrectName()
     {
+        $int = new NumericField(2, 1, 0, 10);
         $register = new Register($this->registerCsv);
-        $register->addField('%$#%', 2, 'int');
+        $register->addField('%$#%', 2, $int);
     }
 
     /**
@@ -327,8 +328,9 @@ class RegisterTest extends TestCase
      */
     public function testAddFieldWithIncorrectColumn()
     {
+        $int = new NumericField(2, 1, 0, 10);
         $register = new Register($this->registerCsv);
-        $register->addField('name', 2.5, 'int');
+        $register->addField('name', 2.5, $int);
     }
 
     /**
@@ -348,13 +350,13 @@ class RegisterTest extends TestCase
      */
     public function testCorrectAddField()
     {
-        $int = new NumericType(2, 1, 0, 10);
+        $int = new NumericField(2, 1, 0, 10);
         $register = new Register($this->registerCsv);
         $register->addField('name', 2,  $int);
         $array = $register->getFields();
         $this->assertArrayHasKey('name', $array);
         $this->assertSame(2, $array['name']['column']);
-        $this->assertTrue(is_a($array['name']['type'], NumericType::class));
+        $this->assertTrue(is_a($array['name']['type'], NumericField::class));
         $register->removeField('name');
         $array = $register->getFields();
         $this->assertArrayNotHasKey('name', $array);

@@ -3,22 +3,22 @@
 namespace Ddrv\Tests\Iptool\Wizard\Types;
 
 use PHPUnit\Framework\TestCase;
-use Ddrv\Iptool\Wizard\Types\StringType;
+use Ddrv\Iptool\Wizard\Fields\StringField;
 
 /**
- * @covers StringType
+ * @covers StringField
  * @property array $correctTransforms;
  */
-class StringTypeTest extends TestCase
+class StringFieldTest extends TestCase
 {
 
     /**
      * @var array
      */
     protected $correctTransforms = array(
-        StringType::TRANSFORM_NONE,
-        StringType::TRANSFORM_LOWER,
-        StringType::TRANSFORM_UPPER
+        StringField::TRANSFORM_NONE,
+        StringField::TRANSFORM_LOWER,
+        StringField::TRANSFORM_UPPER
     );
 
     /**
@@ -32,7 +32,7 @@ class StringTypeTest extends TestCase
         do {
             $incorrectTransform = rand(-100,100);
         } while (in_array($incorrectTransform, $this->correctTransforms));
-        $type = new StringType($incorrectTransform);
+        $type = new StringField($incorrectTransform);
         unset($type);
     }
 
@@ -42,7 +42,7 @@ class StringTypeTest extends TestCase
     public function testCreateWithCorrectTransform()
     {
         foreach ($this->correctTransforms as $correctTransform) {
-            $type = new StringType($correctTransform);
+            $type = new StringField($correctTransform);
             $this->assertSame($correctTransform, $type->getTransform());
             unset($type);
         }
@@ -56,7 +56,7 @@ class StringTypeTest extends TestCase
      */
     public function testCreateWithNegativeMaxLength()
     {
-        $type = new StringType(StringType::TRANSFORM_NONE,-1);
+        $type = new StringField(StringField::TRANSFORM_NONE,-1);
         unset($type);
     }
 
@@ -68,7 +68,7 @@ class StringTypeTest extends TestCase
      */
     public function testCreateWithZeroMaxLength()
     {
-        $type = new StringType(StringType::TRANSFORM_UPPER,0);
+        $type = new StringField(StringField::TRANSFORM_UPPER,0);
         unset($type);
     }
 
@@ -80,7 +80,7 @@ class StringTypeTest extends TestCase
      */
     public function testCreateWithFloatMaxLength()
     {
-        $type = new StringType(StringType::TRANSFORM_LOWER,.5);
+        $type = new StringField(StringField::TRANSFORM_LOWER,.5);
         unset($type);
     }
 
@@ -92,7 +92,7 @@ class StringTypeTest extends TestCase
      */
     public function testCreateWithStringMaxLength()
     {
-        $type = new StringType(StringType::TRANSFORM_NONE,'max');
+        $type = new StringField(StringField::TRANSFORM_NONE,'max');
         unset($type);
     }
 
@@ -101,23 +101,23 @@ class StringTypeTest extends TestCase
      */
     public function testGetValidValue()
     {
-        $type = new StringType();
+        $type = new StringField();
         $type->setMaxLength(3)
-            ->setTransform(StringType::TRANSFORM_NONE);
+            ->setTransform(StringField::TRANSFORM_NONE);
         $result = $type->getValidValue('SoMe TeXt');
         $this->assertSame('SoM', $result);
         $type->setMaxLength(6);
         $result = $type->getValidValue('SoMe TeXt');
         $this->assertSame('SoMe T', $result);
-        $type->setTransform(StringType::TRANSFORM_LOWER);
+        $type->setTransform(StringField::TRANSFORM_LOWER);
         $result = $type->getValidValue('SoMe TeXt');
         $this->assertSame('some t', $result);
-        $type->setTransform(StringType::TRANSFORM_UPPER);
+        $type->setTransform(StringField::TRANSFORM_UPPER);
         $result = $type->getValidValue('SoMe TeXt');
         $this->assertSame('SOME T', $result);
         $transform = $type->getTransform();
         $maxLength = $type->getMaxLength();
-        $this->assertSame(StringType::TRANSFORM_UPPER, $transform);
+        $this->assertSame(StringField::TRANSFORM_UPPER, $transform);
         $this->assertSame(6, $maxLength);
     }
 }

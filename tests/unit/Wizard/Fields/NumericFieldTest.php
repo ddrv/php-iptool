@@ -1,16 +1,16 @@
 <?php
 
-namespace Ddrv\Tests\Iptool\Wizard\Types;
+namespace Ddrv\Tests\Iptool\Wizard\Fields;
 
 use PHPUnit\Framework\TestCase;
-use Ddrv\Iptool\Wizard\Types\NumericType;
+use Ddrv\Iptool\Wizard\Fields\NumericField;
 
 /**
- * @covers NumericType
+ * @covers NumericField
  *
  * @property array $correctModes
  */
-class NumericTypeTest extends TestCase
+class NumericFieldTest extends TestCase
 {
 
     /**
@@ -31,7 +31,7 @@ class NumericTypeTest extends TestCase
      */
     public function testCreateWithArrayPrecision()
     {
-        $type = new NumericType(array());
+        $type = new NumericField(array());
         unset($type);
     }
 
@@ -43,7 +43,7 @@ class NumericTypeTest extends TestCase
      */
     public function testCreateWithFloatPrecision()
     {
-        $type = new NumericType(2.5);
+        $type = new NumericField(2.5);
         unset($type);
     }
 
@@ -55,7 +55,7 @@ class NumericTypeTest extends TestCase
      */
     public function testCreateWithStringPrecision()
     {
-        $type = new NumericType('a');
+        $type = new NumericField('a');
         unset($type);
     }
 
@@ -67,7 +67,7 @@ class NumericTypeTest extends TestCase
      */
     public function testCreateWithNegativePrecision()
     {
-        $type = new NumericType(-1);
+        $type = new NumericField(-1);
         unset($type);
     }
 
@@ -82,7 +82,7 @@ class NumericTypeTest extends TestCase
         do {
             $incorrectMode = rand(-100,100);
         } while (in_array($incorrectMode,$this->correctModes));
-        $type = new NumericType(2, $incorrectMode);
+        $type = new NumericField(2, $incorrectMode);
         unset($type);
     }
 
@@ -94,7 +94,7 @@ class NumericTypeTest extends TestCase
      */
     public function testCreateWithStringMode()
     {
-        $type = new NumericType(2, 'mode');
+        $type = new NumericField(2, 'mode');
         unset($type);
     }
 
@@ -106,7 +106,7 @@ class NumericTypeTest extends TestCase
      */
     public function testCreateWithArrayMode()
     {
-        $type = new NumericType(2, array(1,3));
+        $type = new NumericField(2, array(1,3));
         unset($type);
     }
 
@@ -119,7 +119,7 @@ class NumericTypeTest extends TestCase
     public function testCreateWithStringMin()
     {
         $correctMode = $this->correctModes[rand(0, count($this->correctModes)-1)];
-        $type = new NumericType(2, $correctMode, 'min');
+        $type = new NumericField(2, $correctMode, 'min');
         unset($type);
     }
 
@@ -131,7 +131,7 @@ class NumericTypeTest extends TestCase
      */
     public function testCreateWithStringMax()
     {
-        $type = new NumericType(2, 2, 1,'max');
+        $type = new NumericField(2, 2, 1,'max');
         unset($type);
     }
 
@@ -143,7 +143,7 @@ class NumericTypeTest extends TestCase
      */
     public function testCreateWithMinGreaterMax()
     {
-        $type = new NumericType(2, 2, 100,99.99);
+        $type = new NumericField(2, 2, 100,99.99);
         unset($type);
     }
 
@@ -152,7 +152,7 @@ class NumericTypeTest extends TestCase
      */
     public function testSettersAndGetters()
     {
-        $type = new NumericType();
+        $type = new NumericField();
         $type->setPrecision(2)
             ->setMode(\PHP_ROUND_HALF_EVEN)
             ->setMin(5)
@@ -169,7 +169,7 @@ class NumericTypeTest extends TestCase
      */
     public function testGetValidValue()
     {
-        $type = new NumericType();
+        $type = new NumericField();
         $type->setPrecision(2)
             ->setMode(\PHP_ROUND_HALF_DOWN)
             ->setMin(5)
