@@ -7,6 +7,7 @@ use Ddrv\Iptool\Wizard;
 use Ddrv\Iptool\Wizard\Register;
 use Ddrv\Iptool\Wizard\Network;
 use Ddrv\Iptool\Wizard\Fields\StringField;
+use Ddrv\Iptool\Wizard\Fields\NumericField;
 
 /**
  * @covers Iptool
@@ -32,27 +33,39 @@ class DatabaseTest extends TestCase
             mkdir($tmpDir);
         }
 
-        $wizard = new Wizard($tmpDir);
-
-        $wizard->setAuthor($author);
-        $wizard->setTime($time);
-        $wizard->setLicense($license);
-
-        $countryCode = (new StringField(StringField::TRANSFORM_LOWER))->setMaxLength(2);
-        $countryName = (new StringField());
         $countries = (new Register($csvDir.DIRECTORY_SEPARATOR.'countries.csv'))
             ->setCsv('UTF-8')
-            ->setId(1)
             ->setFirstRow(2)
-            ->addField('code', 2, $countryCode)
-            ->addField('name', 3, $countryName)
-            ;
-        $network = (new Network($csvDir.DIRECTORY_SEPARATOR.'networks.csv', Network::IP_TYPE_ADDRESS, 1,2))
+            ->setId(1)
+            ->addField('code', 2, new StringField(StringField::TRANSFORM_LOWER, 2))
+            ->addField('name', 3, new StringField())
+        ;
+        $cities = (new Register($csvDir.DIRECTORY_SEPARATOR.'cities.csv'))
             ->setCsv('UTF-8')
             ->setFirstRow(2)
-            ->addRegister('country',3, $countries)
+            ->setId(1)
+            ->addField('name', 2, new StringField(0))
+            ->addField('country', 3, new NumericField(0))
         ;
-        $wizard->addNetwork($network);
+        $network = (new Network($csvDir.DIRECTORY_SEPARATOR.'networks.csv', Network::IP_TYPE_ADDRESS, 1, 2))
+            ->setCsv('UTF-8')
+            ->setFirstRow(2)
+        ;
+
+        $wizard = (new Wizard($tmpDir))
+            ->setAuthor($author)
+            ->setTime($time)
+            ->setLicense($license)
+            ->addRegister('city', $cities)
+            ->addRegister('country', $countries)
+            ->addRelation('city', 3, 'country')
+            ->addNetwork(
+                $network,
+                array(
+                    3 => 'city',
+                )
+            )
+        ;
         $wizard->compile($dbFile);
 
 

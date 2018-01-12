@@ -8,7 +8,6 @@ namespace Ddrv\Iptool\Wizard;
  * @const int IP_TYPE_ADDRESS
  * @const int IP_TYPE_LONG
  * @const int IP_TYPE_INETNUM
- * @property array $registers
  * @property int $firstIpColumn
  * @property int $lastIpColumn
  * @property int $ipType
@@ -29,11 +28,6 @@ class Network extends CsvAbstract
      * @const int
      */
     const IP_TYPE_INETNUM = 2;
-
-    /**
-     * @var array
-     */
-    protected $registers;
 
     /**
      * @var int
@@ -78,60 +72,6 @@ class Network extends CsvAbstract
         $this->firstIpColumn = $firstIpColumn;
         $this->lastIpColumn = $lastIpColumn;
         $this->ipType = $ipType;
-    }
-
-    /**
-     * Add register
-     *
-     * @param string $name
-     * @param int $column
-     * @param Register $register
-     * @return $this
-     */
-    public function addRegister($name, $column, $register)
-    {
-
-        if (!$this->checkName($name)) {
-            throw new \InvalidArgumentException('incorrect name');
-        }
-        if (!is_int($column) || $column < 1) {
-            throw new \InvalidArgumentException('column must be positive integer');
-        }
-        if (!($register instanceof Register)) {
-            throw new \InvalidArgumentException('incorrect register');
-        }
-        if (empty($register->getFields())) {
-            throw new \InvalidArgumentException('fields of register can not be empty');
-        }
-        $this->registers[$name] = array(
-            'column' => $column,
-            'register' => $register,
-        );
-        return $this;
-    }
-
-    /**
-     * Remove register.
-     *
-     * @param string $name
-     * @return $this
-     */
-    public function removeRegister($name)
-    {
-        if (isset($this->registers[$name])) {
-            unset($this->registers[$name]);
-        }
-        return $this;
-    }
-
-    /**
-     * Get registers.
-     *
-     * @return array
-     */
-    public function getRegisters()
-    {
-        return $this->registers;
     }
 
     /**

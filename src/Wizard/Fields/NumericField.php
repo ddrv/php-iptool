@@ -36,12 +36,12 @@ class NumericField extends FieldAbstract
     /**
      * @var int|float|double|null
      */
-    protected $minValue;
+    protected $minValue=0;
 
     /**
      * @var int|float|double|null
      */
-    protected $maxValue;
+    protected $maxValue=0;
 
     /**
      * @var int
@@ -203,23 +203,20 @@ class NumericField extends FieldAbstract
     {
         if ($this->precision == 0) {
             $this->packFormatKey = 'L';
-            if ($this->maxValue < (1 << 4) && $this->minValue >= -(1 << 4)) {
-                $this->packFormatKey = 'c';
+            if ($this->maxValue < (1 << 31) && $this->minValue >= -(1 << 31)) {
+                $this->packFormatKey = 'l';
             }
-            if ($this->maxValue < (1 << 8) && $this->minValue >= 0) {
-                $this->packFormatKey = 'C';
-            }
-            if ($this->maxValue < (1 << 8) && $this->minValue >= -(1 << 8)) {
+            if ($this->maxValue < (1 << 15) && $this->minValue >= -(1 << 15)) {
                 $this->packFormatKey = 's';
             }
             if ($this->maxValue < (1 << 16) && $this->minValue >= 0) {
                 $this->packFormatKey = 'S';
             }
-            if ($this->maxValue < (1 << 16) && $this->minValue >= -(1 << 16)) {
-                $this->packFormatKey = 'l';
+            if ($this->maxValue < (1 << 7) && $this->minValue >= -(1 << 7)) {
+                $this->packFormatKey = 'c';
             }
-            if ($this->maxValue < (1 << 32) && $this->minValue >= 0) {
-                $this->packFormatKey = 'L';
+            if ($this->maxValue < (1 << 8) && $this->minValue >= 0) {
+                $this->packFormatKey = 'C';
             }
         } else {
             $this->packFormatKey = 'f';
@@ -232,6 +229,7 @@ class NumericField extends FieldAbstract
      */
     public function updatePackFormat($value)
     {
+        $value = $this->getValidValue($value);
         if ($value < $this->minValue) {
             $this->minValue = $value;
         }

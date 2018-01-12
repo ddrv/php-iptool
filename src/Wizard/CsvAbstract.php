@@ -122,7 +122,7 @@ abstract class CsvAbstract
      * @param string $name
      * @return bool
      */
-    protected function checkName($name)
+    public static function checkName($name)
     {
         return preg_match('/^[a-z0-9\.\-_]+$/ui', $name);
     }
