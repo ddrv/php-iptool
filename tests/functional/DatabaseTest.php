@@ -58,7 +58,7 @@ class DatabaseTest extends TestCase
             ->setLicense($license)
             ->addRegister('city', $cities)
             ->addRegister('country', $countries)
-            ->addRelation('city', 3, 'country')
+            ->addRelation('city', 'country', 'country')
             ->addNetwork(
                 $network,
                 array(
@@ -68,6 +68,9 @@ class DatabaseTest extends TestCase
         ;
         $wizard->compile($dbFile);
 
+        $iptool = new Iptool($dbFile);
+        print_r($iptool->about());
+        print_r($iptool->find('1.23.43.112'));
 
         $tmpFiles = glob($tmpDir.DIRECTORY_SEPARATOR.'*');
         foreach ($tmpFiles as $tmpFile) {

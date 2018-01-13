@@ -2,8 +2,6 @@
 
 namespace Ddrv\Iptool\Wizard;
 
-use Ddrv\Iptool\Wizard;
-
 /**
  * Class RegisterAbstract
  *

@@ -3,6 +3,7 @@
 namespace Ddrv\Iptool;
 
 use Ddrv\Iptool\Wizard\Fields\NumericField;
+use Ddrv\Iptool\Wizard\Fields\StringField;
 use Ddrv\Iptool\Wizard\Network;
 use Ddrv\Iptool\Wizard\Register;
 use Ddrv\Iptool\Wizard\FieldAbstract;
@@ -107,6 +108,7 @@ class Wizard
             'unpack' => '',
             'len' => 4,
             'items' => 0,
+            'fields' => array(),
         ),
     );
 
@@ -241,7 +243,7 @@ class Wizard
      * Add relation
      *
      * @param string $parent
-     * @param int $column
+     * @param string $column
      * @param string $child
      * @return $this
      * @throws \InvalidArgumentException
@@ -254,8 +256,8 @@ class Wizard
         if (!isset($this->registers[$child])) {
             throw new \InvalidArgumentException('child register not exists');
         }
-        if (!is_int($column) || $column < 1) {
-            throw new \InvalidArgumentException('column must be positive integer');
+        if (!is_string($column)) {
+            throw new \InvalidArgumentException('incorrect column');
         }
         $this->relations[$parent][$column] = $child;
         return $this;
@@ -275,7 +277,7 @@ class Wizard
      * Remove relation.
      *
      * @param string $parent
-     * @param int $column
+     * @param string $column
      * @return $this
      */
     public function removeRelation($parent, $column)
@@ -309,7 +311,7 @@ class Wizard
         $tmpDb = $this->prefix.'.db.sqlite';
         try {
             $this->pdo = new PDO('sqlite:' . $tmpDb);
-            $this->pdo->exec('PRAGMA foreign_keys = 1;PRAGMA encoding = \'UTF-8\';');
+            $this->pdo->exec('PRAGMA foreign_keys = 1;PRAGMA integrity_check = 1;PRAGMA encoding = \'UTF-8\';');
         } catch (PDOException $e) {
             throw  $e;
         }
@@ -325,45 +327,21 @@ class Wizard
 
         foreach ($this->networks as $network) {
             $this->addNetworkInTmpDb($network);
-
-            $format = array();
-            $fields = array();
-            $registers = array();
-
-            foreach ($network['map'] as $column=>$name) {
-                $registers[$name] = $column;
-                $type = new NumericField(0);
-                $type->updatePackFormat($this->meta['registers'][$name]['items']);
-                $registerPackFormat = $type->getPackFormat();
-                $format['pack'][$name] = $registerPackFormat;
-                $format['unpack'][$name] = $registerPackFormat.$name;
-                $fields[$name] = null;
-            }
-
-            foreach ($this->relations as $parent => $networkRelation) {
-                foreach ($networkRelation as $column => $child) {
-                    unset($format['pack'][$child]);
-                    unset($format['unpack'][$child]);
-                    unset($fields[$child]);
-                }
-            }
-
-            $packFormat = implode('',$format['pack']);
-            $empty = self::packArray($packFormat, $fields);
-            $this->meta['networks']['pack'] = $packFormat;
-            $this->meta['networks']['unpack'] .= implode('/',$format['unpack']).'/';
-            $this->meta['networks']['len'] += strlen($empty);
-
         }
 
         foreach ($this->registers as $table=>$register) {
             $this->compileRegister($table);
         }
 
-        $this->meta['networks']['unpack'] = mb_substr($this->meta['networks']['unpack'],0,-1);
+        $this->compileNetwork();
+
+        $this->compileHeader();
+
+        $this->makeFile($filename);
 
         $this->pdo = null;
-        print_r($this->meta);
+
+        unlink($tmpDb);
 
     }
 
@@ -386,22 +364,14 @@ class Wizard
             CREATE INDEX `value` ON `_ips` (`value`);
         ';
         $this->pdo->exec($sql);
-        $sql = '
-            CREATE TABLE `_rel` (
-                `parent` INTEGER,
-                `column` INTEGER,
-                `child` INTEGER
-            );
-        ';
-        $this->pdo->exec($sql);
-        $this->insertIps = $this->pdo->prepare('INSERT INTO `_ips` (`ip`,`action`,`parameter`,`value`) VALUES (:ip,:action,:parameter,:value);');
+        $sql = 'INSERT INTO `_ips` (`ip`,`action`,`parameter`,`value`) VALUES (:ip,:action,:parameter,:value);';
+        $this->insertIps = $this->pdo->prepare($sql);
         $this->insertIps->execute(array(
             'ip' => 0,
             'action' => 'add',
             'parameter' => NULL,
             'value' => NULL,
         ));
-        $this->meta['networks']['items'] = 1;
     }
 
     /**
@@ -426,8 +396,8 @@ class Wizard
         }
         $this->pdo->beginTransaction();
         while ($row = fgetcsv($csv, 4096, $source['delimiter'], $source['enclosure'], $source['escape'])) {
-            $firstIpColumn = $network->getFistIpColumn();
-            $lastIpColumn = $network->getLastIpColumn();
+            $firstIpColumn = $network->getFistIpColumn()-1;
+            $lastIpColumn = $network->getLastIpColumn()-1;
             if (!isset($row[$firstIpColumn])) {
                 throw new \ErrorException('have not column with first ip address');
             }
@@ -436,22 +406,24 @@ class Wizard
             }
             $firstIp = $network->getLongIp($row[$firstIpColumn], false);
             $lastIp = $network->getLongIp($row[$lastIpColumn], true);
+            $insert = $this->pdo->prepare('INSERT INTO `_ips` (`ip`,`action`,`parameter`,`value`) VALUES (:ip,:action,:parameter,:value);');
             foreach ($data['map'] as $column=>$register) {
                 $column--;
                 $value = isset($row[$column]) ? $row[$column] : null;
-                $this->insertIps->execute(array(
+                $insert->execute(array(
                     'ip' => $firstIp,
                     'action' => 'add',
                     'parameter' => $register,
                     'value' => $value,
                 ));
-                $this->insertIps->execute(array(
+                $insert->execute(array(
                     'ip' => $lastIp + 1,
                     'action' => 'remove',
                     'parameter' => $register,
                     'value' => $value,
                 ));
-                if ($value) {
+                if (isset($row[$column])) {
+                    $this->meta['networks']['fields'][$register] = null;
                     $this->setUsed($register, $value);
                 }
             }
@@ -462,11 +434,15 @@ class Wizard
     protected function setUsed($register, $id)
     {
         if (!isset($this->prepare['update'][$register])) {
-            $this->prepare['update'][$register] = $this->pdo->prepare('UPDATE `'.$register.'` SET `_used`=\'1\' WHERE `_pk` = :pk;');
+            $sql = 'UPDATE `'.$register.'` SET `_used`=\'1\' WHERE `_pk` = :pk;';
+            $this->prepare['update'][$register] = $this->pdo->prepare($sql);
         }
         $this->prepare['update'][$register]->execute(array('pk'=>$id));
         if (!empty($this->relations[$register])) {
-            $res = $this->pdo->query('SELECT 0,`_pk`,`'.implode('`,`',array_keys($this->meta['registers'][$register]['fields'])).'` FROM `'.$register.'` WHERE `_pk` = \''.addslashes($id).'\'');
+            if (isset($this->meta['networks']['fields'][$register])) unset ($this->meta['networks']['fields'][$register]);
+            $sql = 'SELECT 0,`_pk`,`'.implode('`,`',array_keys($this->meta['registers'][$register]['fields'])).'` 
+                FROM `'.$register.'` WHERE `_pk` = \''.addslashes($id).'\'';
+            $res = $this->pdo->query($sql);
             $row = $res->fetch(PDO::FETCH_NUM);
             foreach ($this->relations[$register] as $column=>$child) {
                 if (isset($row[$column])) {
@@ -559,36 +535,29 @@ class Wizard
      */
     protected function addRelationsInTmpDb()
     {
-        $parentKeyType = new NumericField(0);
-        $columnType = new NumericField(0);
-        $childKeyType = new NumericField(0);
-        $insertRel = $this->pdo->prepare('INSERT INTO `_rel` (`parent`,`column`,`child`) VALUES (:parent,:column,:child);');
-        $this->pdo->beginTransaction();
+        $parentType = new StringField();
+        $fieldType = new StringField();
+        $childType = new StringField();
         foreach ($this->relations as $parent => $networkRelation) {
-            foreach ($networkRelation as $column => $child) {
-                $parentKey = array_search($parent, array_keys($this->relations));
-                $parentKeyType->updatePackFormat($parentKey);
-
-                $childKey = array_search($child, array_keys($this->relations));
-                $childKeyType->updatePackFormat($childKey);
-
-                $columnType->updatePackFormat($column);
+            foreach ($networkRelation as $field => $child) {
+                $parentType->updatePackFormat($parent);
+                $childType->updatePackFormat($child);
+                $fieldType->updatePackFormat($field);
 
                 $this->meta['relations']['items'] ++;
-                $insertRel->execute(array(
-                    $parentKey,
-                    $column,
-                    $childKey
-                ));
+                $this->meta['relations']['data'][] = array(
+                    $parent,
+                    $field,
+                    $child
+                );
             }
         }
-        $this->pdo->commit();
-        $this->meta['relations']['pack'] = $parentKeyType->getPackFormat()
-            .$columnType->getPackFormat()
-            .$childKeyType->getPackFormat();
-        $this->meta['relations']['unpack'] = $parentKeyType->getPackFormat().'/'
-            .$columnType->getPackFormat().'/'
-            .$childKeyType->getPackFormat();
+        $this->meta['relations']['pack'] = $parentType->getPackFormat()
+            .$fieldType->getPackFormat()
+            .$childType->getPackFormat();
+        $this->meta['relations']['unpack'] = $parentType->getPackFormat().'p/'
+            .$fieldType->getPackFormat().'f/'
+            .$childType->getPackFormat().'c';
         $this->meta['relations']['len'] = strlen(pack($this->meta['relations']['pack'], null, null, null));
     }
 
@@ -599,13 +568,14 @@ class Wizard
      */
     protected function compileRegister($register)
     {
-        $tmpFile = fopen($this->prefix.'.reg.'.$register.'.dat', 'w');
+        $file = fopen($this->prefix.'.reg.'.$register.'.dat', 'w');
         $pack = $this->meta['registers'][$register]['pack'];
         $empty =  $this->meta['registers'][$register]['fields'];
         $bin = self::packArray($pack, $empty);
-        fwrite($tmpFile,$bin);
+        fwrite($file,$bin);
         $offset = 0;
-        $data = $this->pdo->query('SELECT * FROM `'.$register.'` WHERE `_used` = \'1\'');
+        //$data = $this->pdo->query('SELECT * FROM `'.$register.'` WHERE `_used` = \'1\'');
+        $data = $this->pdo->query('SELECT * FROM `'.$register.'`');
         $this->pdo->beginTransaction();
         while($row = $data->fetch()) {
             $rowId = $row['_pk'];
@@ -618,13 +588,249 @@ class Wizard
             $bin = self::packArray($pack, $row);
             if ($check) {
                 $offset ++;
-                fwrite($tmpFile,$bin);
+                fwrite($file,$bin);
             }
             $this->pdo->exec('UPDATE `_ips` SET `offset` =\''.($check?$offset:0).'\' WHERE `parameter` = \''.$register.'\' AND `value`=\''.$rowId.'\';');
         }
-        $this->meta['registers'][$register]['items'] = $offset*100;
+        $this->meta['registers'][$register]['items'] = $offset;
         $this->pdo->commit();
-        fclose($tmpFile);
+        fclose($file);
+    }
+
+    /**
+     * Compile network from temporary db
+     */
+    protected function compileNetwork()
+    {
+        $ip = -1;
+        $this->meta['networks']['pack'] = '';
+        $fields = $this->meta['networks']['fields'];
+        $values = array();
+        foreach ($fields as $register=>$null) {
+            $values[$register] = array();
+            $type = new NumericField(0);
+            $type->updatePackFormat($this->meta['registers'][$register]['items']);
+            $pack = $type->getPackFormat();
+            $this->meta['networks']['pack'] .= $pack;
+            $this->meta['networks']['unpack'] .= $pack.$register.'/';
+        }
+        $pack = $this->meta['networks']['pack'];
+        $this->meta['networks']['unpack'] = mb_substr($this->meta['networks']['unpack'],0,-1);
+        $binaryPrevData = self::packArray($pack, $fields);
+        $this->meta['networks']['len'] += strlen($binaryPrevData);
+        $offset = 0;
+        $this->meta['index'][0] = 0;
+        $file = fopen($this->prefix.'.networks.dat','w');
+        $ipInfo = $this->pdo->query('SELECT * FROM `_ips` ORDER BY `ip` ASC, `action` DESC, `id` ASC;');
+        while ($row = $ipInfo->fetch()) {
+            if ($row['ip'] !== $ip) {
+                foreach ($values as $param=>$v) {
+                    if (!empty($param)) $fields[$param] = array_pop($v);
+                }
+                $binaryData = self::packArray($pack, $fields);
+                if ($binaryData !== $binaryPrevData || empty($ip)) {
+                    fwrite($file, pack('N', $ip) . $binaryData);
+                    $octet = (int)long2ip($ip);
+                    if (!isset($this->meta['index'][$octet])) $this->meta['index'][$octet] = $offset;
+                    $offset++;
+                    $binaryPrevData = $binaryData;
+                }
+                $ip = $row['ip'];
+            }
+            if ($row['action'] == 'remove') {
+                $key = array_search($row['offset'],$values[$row['parameter']]);
+                if ($key !== false) {
+                    unset($values[$row['parameter']][$key]);
+                }
+            } else {
+                $values[$row['parameter']][] = $row['offset'];
+            }
+        }
+        if ($ip < ip2long('255.255.255.255')) {
+            foreach ($values as $param => $v) {
+                if (!empty($param)) $fields[$param] = array_pop($v);
+            }
+            $binaryData = self::packArray($pack, $fields);
+            if ($binaryData !== $binaryPrevData) {
+                $octet = (int)long2ip($ip);
+                if (!isset($this->meta['index'][$octet])) $this->meta['index'][$octet] = $offset;
+                $offset++;
+                fwrite($file, pack('N', $ip) . $binaryData);
+            }
+        }
+        $this->meta['networks']['items'] = $offset;
+        for($i=1;$i<=255;$i++) {
+            if (!isset($this->meta['index'][$i])) $this->meta['index'][$i] = $this->meta['index'][$i-1];
+        }
+        ksort($this->meta['index']);
+        fclose($file);
+        unset($ip);
+    }
+
+    /**
+     * Compile header.
+     */
+    protected function compileHeader()
+    {
+        /*
+         * Format version.
+         */
+        $header = pack('C', self::FORMAT_VERSION);
+
+        /*
+         * Count of registers.
+         */
+        $header .= pack('C', count($this->meta['registers']));
+
+        $nameLen = 1;
+        $packLen = strlen($this->meta['networks']['pack']);
+        $lenType = new NumericField();
+        $lenType->updatePackFormat($this->meta['networks']['len']);
+        $itmType = new NumericField();
+        $itmType->updatePackFormat($this->meta['networks']['items']);
+        foreach ($this->meta['registers'] as $registerName => $register) {
+            if (strlen($registerName) > $nameLen) $nameLen = strlen($registerName);
+            if (strlen($register['unpack']) > $packLen) $packLen = strlen($register['unpack']);
+            $lenType->updatePackFormat($register['len']);
+            $itmType->updatePackFormat($register['items']);
+        }
+        $len = $lenType->getPackFormat();
+        $itm = $itmType->getPackFormat();
+
+        $pack = 'A'.$nameLen.'A'.$packLen.$len.$itm;
+        $unpack = 'A'.$nameLen.'name/A'.$packLen.'pack/'.$len.'len/'.$itm.'items';
+
+        /*
+         * Length of registers define unpack format.
+         */
+        $header .= pack('I',strlen($unpack));
+
+        /*
+         * Length of relations pack format.
+         */
+        $lenRelationsFormat = strlen($this->meta['relations']['unpack']);
+        $header .= pack('C', $lenRelationsFormat);
+
+        /*
+         * Relation length.
+         */
+        $header .= pack('S', $this->meta['relations']['len']);
+
+        /*
+         * Relations count.
+         */
+        $header .= pack('C', $this->meta['relations']['items']);
+
+        /*
+         * Relations pack format (parent, column, child).
+         */
+        $header .= $this->meta['relations']['unpack'];
+
+        /*
+         * Relations.
+         */
+        foreach ($this->meta['relations']['data'] as $relation) {
+            $header .= self::packArray(
+                $this->meta['relations']['pack'],
+                $relation
+            );
+        }
+
+        /*
+         * Registers define unpack format.
+         */
+        $header .= pack('A*',$unpack);
+
+        /*
+         * Length of registers define length.
+         */
+        $header .= pack('I',strlen(pack($pack,'','',0,0)));
+
+        /**
+         * Registers define.
+         */
+        foreach ($this->meta['registers'] as $registerName => $register) {
+            $header .= pack(
+                $pack,
+                $registerName,
+                $register['unpack'],
+                $register['len'],
+                $register['items']
+            );
+        }
+
+        /*
+         * Networks define.
+         */
+        $header .= pack(
+            $pack,
+            'n',
+            $this->meta['networks']['unpack'],
+            $this->meta['networks']['len'],
+            $this->meta['networks']['items']
+        );
+
+        /*
+         * Index.
+         */
+        $header .= $this->packArray('I*',$this->meta['index']);
+
+        /*
+         * Control word and header length.
+         */
+        $headerLength = strlen($header);
+        $header = 'DIT'.pack('I', $headerLength).$header;
+
+        $file = fopen($this->prefix.'.header', 'w');
+        fwrite($file, $header);
+        fclose($file);
+    }
+
+    /**
+     * Make file.
+     *
+     * @param string $fileName
+     */
+    protected function makeFile($fileName)
+    {
+        /*
+         * Create binary database.
+         */
+        $tmp = $this->prefix.'.database.dat';
+        $database = fopen($tmp,'w');
+
+        /*
+         * Write header to database.
+         */
+        $file = $this->prefix.'.header';
+        $stream = fopen($file, 'rb');
+        stream_copy_to_stream($stream, $database);
+        fclose($stream);
+        if (is_writable($file)) unlink($file);
+
+        /*
+         * Write networks to database.
+         */
+        $file = $this->prefix.'.networks.dat';
+        $stream = fopen($file, 'rb');
+        stream_copy_to_stream($stream, $database);
+        fclose($stream);
+        if (is_writable($file)) unlink($file);
+
+        foreach ($this->meta['registers'] as $register=>$data) {
+            $file = $this->prefix.'.reg.'.$register.'.dat';
+            $stream = fopen($file, 'rb');
+            stream_copy_to_stream($stream, $database);
+            fclose($stream);
+            if (is_writable($file)) unlink($file);
+        }
+
+        $time = empty($this->time)?time():$this->time;
+        fwrite($database,pack('N1A128',$time,$this->author));
+        fwrite($database,pack('A*',$this->license));
+        fclose($database);
+
+        rename($tmp, $fileName);
     }
 
     /**

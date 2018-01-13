@@ -16,7 +16,7 @@ class Iptool
     /**
      * Parser version.
      */
-    const VERSION = '1';
+    const FORMAT_VERSION = 2;
 
     /**
      * Correct read database flag.
@@ -65,28 +65,34 @@ class Iptool
             return;
         }
         $this->db = fopen($databaseFile, 'rb');
-        $d = fread($this->db, 4);
+        $d = fread($this->db, 7);
         $dit = substr($d,0,3);
-        $letter = substr($d,3,1);
-        if ($dit !== 'DIT' || !in_array($letter,array('C','I','L'))) {
+        if ($dit !== 'DIT') {
             fclose($this->db);
             $this->errors[] = 'file '.$databaseFile.' is not Ddrv\\Iptool database' ;
             return;
         }
-        $len = $letter=='C'?1:4;
-        $tmp = unpack($letter.'headerLen', fread($this->db, $len));
+        $tmp = unpack('IheaderLen', substr($d,3,4));
         $headerLen = $tmp['headerLen'];
         $header = fread($this->db,$headerLen);
+
         $offset = 0;
-        $tmp = unpack('Cver/Ccount/IformatLen',substr($header,$offset,6));
-        $offset += 6;
+        $tmp = unpack('Cver/Ccount/IformatLen/ClenRelationFormat/SrelationLen/CrelationCount',substr($header,$offset,10));
+        $offset += 10;
         $this->meta = [
             'dit' => $dit,
             'version' => $tmp['ver'],
         ];
-        if ($this->meta['version'] != self::VERSION) {
+        $relationFormat = substr($header,$offset,$tmp['lenRelationFormat']);
+        $offset += $tmp['lenRelationFormat'];
+        for ($rel = 0; $rel < $tmp['relationCount']; $rel++) {
+            $relation = unpack($relationFormat, substr($header,$offset, $tmp['relationLen']));
+            $this->meta['relations'][$relation['p']][$relation['f']] = $relation['c'];
+            $offset += $tmp['relationLen'];
+        }
+        if ($this->meta['version'] !== self::FORMAT_VERSION) {
             fclose($this->db);
-            $this->errors[] = 'file '.$databaseFile.' is not database version '.self::VERSION;
+            $this->errors[] = 'file '.$databaseFile.' is not database version '.self::FORMAT_VERSION;
             return;
         }
         $registersCount = $tmp['count'];
@@ -100,7 +106,7 @@ class Iptool
         $registersDefineLen = $tmp['registersDefineLen'];
 
         for($i=0;$i<$registersCount;$i++) {
-            $tmp = unpack($registersFormat,substr($header,$offset,$registersDefineLen));
+            $tmp = unpack($registersFormat, substr($header, $offset, $registersDefineLen));
             $this->meta['registers'][$tmp['name']] = array(
                 'pack' => $tmp['pack'],
                 'len' => $tmp['len'],
@@ -108,7 +114,7 @@ class Iptool
             );
             $offset += $registersDefineLen;
         }
-        $tmp = unpack($registersFormat,substr($header,$offset,$registersDefineLen));
+        $tmp = unpack($registersFormat,substr($header, $offset, $registersDefineLen));
         $this->meta['networks'] = array(
             'pack' => $tmp['pack'],
             'len' => $tmp['len'],
@@ -116,7 +122,7 @@ class Iptool
         );
         $offset += $registersDefineLen;
         $this->meta['index'] = array_values(unpack('I256',substr($header,$offset,1024)));
-        $offset = strlen($header)+$len+4;
+        $offset = strlen($header)+7;
         $this->meta['networks']['offset'] = $offset;
         $offset += ($this->meta['networks']['len'] * $this->meta['networks']['items']);
         foreach ($this->meta['registers'] as $r=>$register) {
@@ -196,6 +202,14 @@ class Iptool
         $seek = $this->meta['registers'][$register]['offset']+($item * $this->meta['registers'][$register]['len']);
         fseek($this->db,$seek);
         $data = unpack($this->meta['registers'][$register]['pack'],fread($this->db,$this->meta['registers'][$register]['len']));
+        if (!empty($this->meta['relations'])) {
+            foreach ($data as $field => $value) {
+                if (isset($this->meta['relations'][$register][$field])) {
+                    unset($data[$field]);
+                    $data[$field] = $this->getRegisterRecord($this->meta['relations'][$register][$field], $value);
+                }
+            }
+        }
         return $data;
     }
 

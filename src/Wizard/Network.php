@@ -152,8 +152,8 @@ class Network extends CsvAbstract
             if (false === $firstIp or false === $prefix) {
                 return $result;
             }
-            $netsize = 1 << (32 - $prefix);
-            $lastIp = $firstIp + $netsize - 1;
+            $netSize = 1 << (32 - $prefix);
+            $lastIp = $firstIp + $netSize - 1;
             if ($lastIp >= (1 << 32)) {
                 return $result;
             }
@@ -164,5 +164,4 @@ class Network extends CsvAbstract
         }
         return $result;
     }
-
 }

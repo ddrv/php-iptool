@@ -268,13 +268,18 @@ Use Converter class for create database
 |Size|Caption|
 |---|---|
 |3|A control word that confirms the authenticity of the file. It is always equal to DIT|
-|1|Unpack format for header size reading|
-|1 or 4|Header size (L)|
+|4|Header size (L)|
 |1|Iptool format version|
 |1|Registers count (RC)|
 |4|Size of registers metadata unpack formats (RF)|
+|1|Size of relations unpack format (LRF)|
+|2|Size of relation define (LRD)|
+|1|Relations count (RLC)|
+|LRF|Relation unpack format|
+|RLC*LRD|Relations|
+|4|Size of registers metadata(RD)|
 |RF|Registers metadata unpack format|
-|RF*(RC+1)|Registers metadata|
+|RD*(RC+1)|Registers metadata|
 |1024|Index of first octets|
 |?|Database of intervals|
 |?|Database of Register 1|
